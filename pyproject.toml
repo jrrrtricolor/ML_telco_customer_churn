@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ml-telco-customer-churn"
+version = "0.1.0"
+description = "Modelo preditivo de churn de clientes para operadora de telecomunicações"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+dependencies = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "scikit-learn>=1.3",
+    "matplotlib>=3.7",
+    "seaborn>=0.12",
+    "jupyter>=1.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "black>=23.0",
+    "ruff>=0.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+# ---------------------------------------------------------------------------
+# Configuração do Black (formatação de código)
+# ---------------------------------------------------------------------------
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+
+# ---------------------------------------------------------------------------
+# Configuração do Ruff (linting)
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # erros de estilo pycodestyle
+    "F",   # erros pyflakes
+    "I",   # ordenação de imports (isort)
+    "N",   # convenções de nomenclatura PEP 8
+    "UP",  # upgrades de sintaxe pyupgrade
+]
+ignore = [
+    "E501",  # linha muito longa (controlado pelo Black)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+# ---------------------------------------------------------------------------
+# Configuração do Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
