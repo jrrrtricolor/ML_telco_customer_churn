@@ -32,6 +32,7 @@ ML_telco_customer_churn/
 │   ├── features/                # Engenharia de features
 │   ├── models/                  # Treinamento e inferência dos modelos
 │   ├── evaluation/              # Métricas e avaliação dos modelos
+│   ├── servico/                 # Camada de serviço/inferência
 │   └── utils/                   # Funções utilitárias compartilhadas
 │
 ├── data/
@@ -46,6 +47,8 @@ ML_telco_customer_churn/
 ├── tests/                       # Testes automatizados
 │
 ├── docs/                        # Documentação adicional do projeto
+├── docker/                      # Arquivos de containerização
+├── deployment/                  # Artefatos de deploy
 │
 ├── pyproject.toml               # Configuração do projeto e dependências
 ├── .gitignore                   # Arquivos e pastas ignorados pelo Git
@@ -114,10 +117,16 @@ Os notebooks estão organizados na pasta `notebooks/` e devem ser executados na 
 ## 🤖 Como Treinar o Modelo
 
 ```bash
-python src/models/train.py
+python src/models/treino.py
 ```
 
 Os modelos treinados serão salvos em `models/trained_models/`.
+
+Para comparar múltiplos modelos e parâmetros (incluindo árvores):
+
+```bash
+python src/models/treino_modelos_arvore.py
+```
 
 ---
 
@@ -186,4 +195,3 @@ Projeto desenvolvido como estudo de caso de Machine Learning aplicado ao setor d
 ## 📄 Licença
 
 Este projeto está licenciado sob a [MIT License](LICENSE).
-

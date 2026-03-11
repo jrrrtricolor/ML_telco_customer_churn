@@ -1,6 +1,7 @@
 """
 Testes básicos de sanidade para verificar que a estrutura do projeto está correta.
 """
+
 import importlib
 import os
 
@@ -20,6 +21,7 @@ def test_diretorios_obrigatorios_existem():
         "src/features",
         "src/models",
         "src/evaluation",
+        "src/servico",
         "src/utils",
         "data/raw",
         "data/processed",
@@ -27,6 +29,8 @@ def test_diretorios_obrigatorios_existem():
         "notebooks",
         "tests",
         "docs",
+        "docker",
+        "deployment",
     ]
     for diretorio in diretorios:
         caminho = os.path.join(base, diretorio)
