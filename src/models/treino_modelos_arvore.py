@@ -79,6 +79,8 @@ def obter_definicoes_modelos(estado_aleatorio: int) -> list[DefinicaoModelo]:
 def treinar_e_comparar_modelos(
     caminho_dados: str | Path = "data/processed/telco_churn_encoded.csv",
     estado_aleatorio: int = 42,
+    usar_grade_reduzida: bool = False,
+    n_splits_cv: int = 5,
 ) -> dict[str, Any]:
     """Treina múltiplos modelos com busca de parâmetros e retorna comparação.
 
@@ -98,7 +100,7 @@ def treinar_e_comparar_modelos(
     )
     preprocessador = construir_preprocessador(atributos)
     validacao_cruzada = StratifiedKFold(
-        n_splits=5, shuffle=True, random_state=estado_aleatorio
+        n_splits=n_splits_cv, shuffle=True, random_state=estado_aleatorio
     )
 
     resultados: dict[str, Any] = {"modelos": {}}
@@ -106,7 +108,21 @@ def treinar_e_comparar_modelos(
     melhor_roc_auc = -1.0
     melhor_estimador = None
 
-    for definicao in obter_definicoes_modelos(estado_aleatorio):
+    definicoes_modelos = obter_definicoes_modelos(estado_aleatorio)
+    if usar_grade_reduzida:
+        definicoes_modelos = [
+            DefinicaoModelo(
+                nome=definicao.nome,
+                classificador=definicao.classificador,
+                grade_parametros={
+                    parametro: [valores[0]]
+                    for parametro, valores in definicao.grade_parametros.items()
+                },
+            )
+            for definicao in definicoes_modelos
+        ]
+
+    for definicao in definicoes_modelos:
         pipeline = Pipeline(
             steps=[
                 ("preprocessador", preprocessador),
