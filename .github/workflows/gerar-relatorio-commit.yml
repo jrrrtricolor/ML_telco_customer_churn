@@ -1,0 +1,46 @@
+name: Gerar relatorio de commit
+
+on:
+  push:
+    paths-ignore:
+      - "report/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  gerar-relatorio:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Gerar relatorio automatico
+        run: python src/utils/gerar_relatorio_commit.py
+
+      - name: Publicar relatorio na pasta report
+        run: |
+          if git diff --quiet -- report/; then
+            echo "Sem alteracao no relatorio."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add report/
+          git commit -m "atualiza relatorio automatico [skip ci]"
+          git push

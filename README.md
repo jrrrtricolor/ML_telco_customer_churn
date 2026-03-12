@@ -128,6 +128,16 @@ Para comparar múltiplos modelos e parâmetros (incluindo árvores):
 python src/models/treino_modelos_arvore.py
 ```
 
+Para gerar gráficos de justificativa técnica da modelagem:
+
+```bash
+python src/evaluation/graficos_justificativa.py
+```
+
+Guia de aprendizado passo a passo (iniciante em MLE):
+
+`docs/guia_iniciante_machine_learning_engineering.md`
+
 ---
 
 ## 🧪 Como Rodar os Testes
@@ -140,6 +150,18 @@ Para verificar a cobertura de testes:
 
 ```bash
 pytest tests/ --cov=src --cov-report=term-missing
+```
+
+---
+
+## 🔒 Hook de Commit (flake8)
+
+Para bloquear commits fora do padrão flake8:
+
+```bash
+git config core.hooksPath .githooks
+chmod +x .githooks/pre-commit
+python3 -m pip install -e ".[dev]"
 ```
 
 ---
