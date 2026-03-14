@@ -1,7 +1,11 @@
+import logging
 import os
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Relatorio:
@@ -21,30 +25,30 @@ class Relatorio:
             else:
                 raise ValueError("Tipo de arquivo não suportado")
 
-        except Exception as e:
-            raise IOError(f"Erro ao salvar o gráfico: {e}")
+        except Exception as exc:
+            raise OSError(f"Erro ao salvar o gráfico: {exc}") from exc
 
-        print(f"Gráfico salvo com sucesso em: {file_path}")
+        LOGGER.info("Gráfico salvo com sucesso em: %s", file_path)
 
     @staticmethod
     def criar_histograma(dataset: pd.DataFrame, feature_em_foco: str) -> None:
 
         for feature in dataset.columns:
-            print('#' * 50, f'Histograma da coluna: {feature}', '#' * 50)
+            LOGGER.info("Gerando histograma da coluna: %s", feature)
 
             grafico = px.histogram(
                 dataset,
                 x=feature,
                 text_auto=True,
-                title=f'Distribuição de {feature}',
+                title=f"Distribuição de {feature}",
                 color=feature_em_foco,
-                barmode='group'
+                barmode="group",
             )
 
             Relatorio.salvar_grafico(
                 grafico,
                 file_name=f"{feature}-to-{feature_em_foco}-histograma.png",
                 path="../report/normalizado",
-                tipo_arquivo="png"
+                tipo_arquivo="png",
             )
 
