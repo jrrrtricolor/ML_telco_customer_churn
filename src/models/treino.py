@@ -49,8 +49,7 @@ class Treino:
 
     def split_dados(self, test_size: float = 0.2) -> None:
 
-        self.x_treino, self.x_teste,
-        self.y_treino, self.y_teste = train_test_split(
+        self.x_treino, self.x_teste, self.y_treino, self.y_teste = train_test_split(
             self.X,
             self.y,
             test_size=test_size,
