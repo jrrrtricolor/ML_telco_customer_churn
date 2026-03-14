@@ -1,19 +1,14 @@
 # Importar bibliotecas
 import pandas as pd
-import plotly.express as py
-from sklearn.compose import make_column_transformer
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelEncoder
-from sklearn.dummy import DummyClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.tree import plot_tree
+from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 
 # Importar classes internas
-from src.utils.arquivo import Arquivo
 from src.models.modelos import Modelos
 
-class Normaliza:
+
+class EDA:
     def __init__(self, dados):
         self.dados = dados
 
@@ -38,34 +33,49 @@ class Normaliza:
         )
         return dados
 
-    def normalizar_dados(self) -> tuple[pd.DataFrame, np.ndarray]:
+    def corrigir_distancia_valores_numericos(self, dados: pd.DataFrame, colunas_numericas_list: [str]) -> pd.DataFrame:
+        # Corrigir coluna numérica
 
+        for coluna in colunas_numericas_list:
+            if coluna in dados.columns:
+                dados[coluna] = pd.to_numeric(
+                    dados[coluna],
+                    errors="raise"
+                )
 
+            # Remover valores inválidos
+            dados = dados.dropna(subset=[coluna])
 
+        # Inicializando objeto MinMaxScaler
+        scaler = MinMaxScaler()
+
+        # Aplicando o scaler nas colunas numéricas
+        dados[colunas_numericas_list] = scaler.fit_transform(
+            dados[colunas_numericas_list]
+        )
+        return dados
+
+    def normalizar_dados(self, colunas_a_remover: list[str], coluna_target: str) -> tuple[pd.DataFrame, np.ndarray]:
         # Separar as variáveis explicativas e a variável target
-        dados = dados.drop(columns=["customerID"])
-        variaveis_explicaveis = dados.drop(columns=[COLUNA_TARGET])
+        dados = self.dados.drop(columns=colunas_a_remover)
+        variaveis_explicaveis = dados.drop(columns=[coluna_target])
 
         # Transformando a variavel alvo.
         label_enconder = LabelEncoder()
-        variavel_target = label_enconder.fit_transform(dados[COLUNA_TARGET])
+        variavel_target = label_enconder.fit_transform(dados[coluna_target])
 
         # Corrigir os valores da coluna TotalCharges
         variaveis_explicaveis = self.corrigir_valores_total_charges(variaveis_explicaveis)
 
+        # Corrigir a distância entre os valores numéricos
+        colunas_numericas = [
+            "tenure",
+            "MonthlyCharges",
+            "TotalCharges",
+        ]
+        variaveis_explicaveis = self.corrigir_distancia_valores_numericos(variaveis_explicaveis, colunas_numericas)
+
         # Criar o modelo de one hot encoding e transformar as variáveis explicativas
-        variaveis_explicaveis = Modelos.criar_one_hot_model(variaveis_explicaveis)
+        variaveis_explicaveis = Modelos.criar_one_hot_model(variaveis_explicaveis=variaveis_explicaveis)
 
         return variaveis_explicaveis, variavel_target
-
-
-if __name__ == "__main__":
-
-    DADOS_PATH = '../../data/raw/Telco_Customer_Churn.csv'
-    COLUNA_TARGET = "Churn"
-
-    # Carregar os dados
-    pd_dados = Arquivo.carregar_dados(DADOS_PATH)
-    normalizar = Normalizar(dados=pd_dados)
-
-    variaveis_explicaveis, variavel_target = normalizar.normalizar_dados()
