@@ -1,15 +1,28 @@
+import logging
 import os
+
 import joblib
-import pandas as pd
 import matplotlib.pyplot as plt
-
+import numpy as np
+import pandas as pd
 from sklearn.dummy import DummyClassifier
-from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
-
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+from src.models.modelos import Modelos
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Treino:
@@ -44,15 +57,15 @@ class Treino:
             random_state=self.random_state
         )
 
-        print("Dados divididos em treino e teste")
+        LOGGER.info("Dados divididos em treino e teste")
 
     # --------------------------------------------------
     # Criar modelos
     # --------------------------------------------------
 
-    def criar_modelos(self) -> dict:
+    def criar_modelos(self) -> dict[str, Pipeline]:
 
-        modelos = {
+        modelos_base = {
 
             "dummy": DummyClassifier(strategy="most_frequent"),
 
@@ -70,45 +83,81 @@ class Treino:
             )
         }
 
-        modelos_treinados = {}
+        modelos_treinados: dict[str, Pipeline] = {}
 
-        for nome, modelo in modelos.items():
+        for nome, modelo in modelos_base.items():
+            pipeline_modelo = Modelos.criar_pipeline(
+                modelo=modelo,
+                variaveis_explicaveis=self.X,
+            )
 
-            modelo.fit(self.x_treino, self.y_treino)
+            pipeline_modelo.fit(self.x_treino, self.y_treino)
 
-            modelos_treinados[nome] = modelo
+            modelos_treinados[nome] = pipeline_modelo
 
-            print(f"Modelo treinado: {nome}")
+            LOGGER.info("Modelo treinado: %s", nome)
 
         return modelos_treinados
+
+    @staticmethod
+    def obter_scores(modelo: Pipeline, x_teste: pd.DataFrame) -> np.ndarray | None:
+        if hasattr(modelo, "predict_proba"):
+            probabilidades = modelo.predict_proba(x_teste)
+            if probabilidades.ndim == 2 and probabilidades.shape[1] > 1:
+                return probabilidades[:, 1]
+
+            return np.ravel(probabilidades)
+
+        if hasattr(modelo, "decision_function"):
+            return np.ravel(modelo.decision_function(x_teste))
+
+        return None
 
     # --------------------------------------------------
     # Avaliar modelos
     # --------------------------------------------------
 
-    def avaliar_modelos(self, modelos: dict) -> pd.DataFrame:
+    def avaliar_modelos(self, modelos: dict[str, Pipeline]) -> pd.DataFrame:
 
         resultados = []
 
         for nome, modelo in modelos.items():
 
             y_pred = modelo.predict(self.x_teste)
+            y_score = self.obter_scores(modelo, self.x_teste)
 
-            score = accuracy_score(self.y_teste, y_pred)
+            metricas = {
+                "modelo": nome,
+                "accuracy": accuracy_score(self.y_teste, y_pred),
+                "precision": precision_score(self.y_teste, y_pred, zero_division=0),
+                "recall": recall_score(self.y_teste, y_pred, zero_division=0),
+                "f1": f1_score(self.y_teste, y_pred, zero_division=0),
+                "roc_auc": np.nan,
+                "pr_auc": np.nan,
+            }
 
-            resultados.append(
-                {
-                    "modelo": nome,
-                    "accuracy": score
-                }
-            )
+            if y_score is not None:
+                try:
+                    metricas["roc_auc"] = roc_auc_score(self.y_teste, y_score)
+                except ValueError:
+                    LOGGER.warning("Nao foi possivel calcular ROC-AUC para o modelo %s", nome)
+
+                try:
+                    metricas["pr_auc"] = average_precision_score(self.y_teste, y_score)
+                except ValueError:
+                    LOGGER.warning("Nao foi possivel calcular PR-AUC para o modelo %s", nome)
+
+            resultados.append(metricas)
 
         df_resultados = pd.DataFrame(resultados)
 
         df_resultados = df_resultados.sort_values(
-            by="accuracy",
-            ascending=False
+            by=["roc_auc", "pr_auc", "f1", "recall", "accuracy"],
+            ascending=False,
+            na_position="last",
         )
+
+        df_resultados = df_resultados.reset_index(drop=True)
 
         return df_resultados
 
@@ -116,15 +165,30 @@ class Treino:
     # Plotar árvore de decisão
     # --------------------------------------------------
 
-    def plotar_arvore_decisao(self, modelo) -> None:
+    def plotar_arvore_decisao(self, modelo: Pipeline) -> None:
+
+        if not isinstance(modelo, Pipeline):
+            raise TypeError("plotar_arvore_decisao espera um modelo sklearn Pipeline.")
+
+        arvore = modelo.named_steps.get("modelo")
+        preprocessador = modelo.named_steps.get("preprocessador")
+
+        if not isinstance(arvore, DecisionTreeClassifier):
+            raise TypeError("O estimador final nao e uma DecisionTreeClassifier.")
+
+        feature_names = self.X.columns.tolist()
+        if preprocessador is not None and hasattr(preprocessador, "get_feature_names_out"):
+            feature_names = preprocessador.get_feature_names_out().tolist()
+
+        class_names = [str(classe) for classe in np.unique(self.y)]
 
         plt.figure(figsize=(20, 10))
 
         plot_tree(
-            modelo,
+            arvore,
             filled=True,
-            feature_names=self.X.columns,
-            class_names=True
+            feature_names=feature_names,
+            class_names=class_names,
         )
 
         plt.title("Árvore de Decisão")
@@ -136,7 +200,7 @@ class Treino:
     # --------------------------------------------------
 
     @staticmethod
-    def salvar_modelo(modelo, nome_modelo: str, path: str = "../models/trained_models") -> None:
+    def salvar_modelo(modelo, nome_modelo: str, path: str = "models/trained_models") -> None:
 
         os.makedirs(path, exist_ok=True)
 
@@ -144,4 +208,4 @@ class Treino:
 
         joblib.dump(modelo, file_path)
 
-        print(f"Modelo salvo em: {file_path}")
+        LOGGER.info("Modelo salvo em: %s", file_path)

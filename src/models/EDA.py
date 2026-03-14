@@ -1,24 +1,22 @@
-# Importar bibliotecas
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import MinMaxScaler
-import numpy as np
-
-# Importar classes internas
-from src.models.modelos import Modelos
 
 
 class EDA:
     def __init__(self, dados):
         self.dados = dados
 
-    def corrigir_valores_total_charges(self, dados: pd.DataFrame) -> pd.DataFrame:
+    @staticmethod
+    def corrigir_valores_total_charges(dados: pd.DataFrame) -> pd.DataFrame:
         # Corrigir os valores da coluna TotalCharges
+        dados = dados.copy()
+
         # substituir espaços por NaN
         dados["TotalCharges"] = dados["TotalCharges"].replace(" ", np.nan)
 
         # converter para número
-        dados["TotalCharges"] = pd.to_numeric(dados["TotalCharges"])
+        dados["TotalCharges"] = pd.to_numeric(dados["TotalCharges"], errors="coerce")
 
         # encontrar valores faltantes
         mask = dados["TotalCharges"].isna()
@@ -31,51 +29,63 @@ class EDA:
                 dados.loc[mask, "MonthlyCharges"] *
                 tenure_ajustado.loc[mask]
         )
+
         return dados
 
-    def corrigir_distancia_valores_numericos(self, dados: pd.DataFrame, colunas_numericas_list: [str]) -> pd.DataFrame:
-        # Corrigir coluna numérica
-
+    @staticmethod
+    def corrigir_valores_numericos(
+        dados: pd.DataFrame,
+        colunas_numericas_list: list[str],
+    ) -> pd.DataFrame:
+        dados = dados.copy()
         for coluna in colunas_numericas_list:
             if coluna in dados.columns:
                 dados[coluna] = pd.to_numeric(
                     dados[coluna],
-                    errors="raise"
+                    errors="coerce",
                 )
 
-            # Remover valores inválidos
-            dados = dados.dropna(subset=[coluna])
+        colunas_existentes = [
+            coluna for coluna in colunas_numericas_list if coluna in dados.columns
+        ]
+        if colunas_existentes:
+            dados = dados.dropna(subset=colunas_existentes)
 
-        # Inicializando objeto MinMaxScaler
-        scaler = MinMaxScaler()
-
-        # Aplicando o scaler nas colunas numéricas
-        dados[colunas_numericas_list] = scaler.fit_transform(
-            dados[colunas_numericas_list]
-        )
         return dados
 
-    def normalizar_dados(self, colunas_a_remover: list[str], coluna_target: str) -> tuple[pd.DataFrame, np.ndarray]:
+    def normalizar_dados(
+        self,
+        colunas_a_remover: list[str],
+        coluna_target: str,
+    ) -> tuple[pd.DataFrame, np.ndarray]:
         # Separar as variáveis explicativas e a variável target
-        dados = self.dados.drop(columns=colunas_a_remover)
-        variaveis_explicaveis = dados.drop(columns=[coluna_target])
+        dados = self.dados.drop(columns=colunas_a_remover).copy()
+        variaveis_explicaveis = dados.drop(columns=[coluna_target]).copy()
 
         # Transformando a variavel alvo.
-        label_enconder = LabelEncoder()
-        variavel_target = label_enconder.fit_transform(dados[coluna_target])
+        label_encoder = LabelEncoder()
+        variavel_target = pd.Series(
+            label_encoder.fit_transform(dados[coluna_target]),
+            index=dados.index,
+            name=coluna_target,
+        )
 
         # Corrigir os valores da coluna TotalCharges
         variaveis_explicaveis = self.corrigir_valores_total_charges(variaveis_explicaveis)
 
-        # Corrigir a distância entre os valores numéricos
+        # Corrigir valores numéricos sem aplicar escala global.
+        # A escala sera feita no pipeline, apos o split, para evitar leakage.
         colunas_numericas = [
             "tenure",
             "MonthlyCharges",
             "TotalCharges",
         ]
-        variaveis_explicaveis = self.corrigir_distancia_valores_numericos(variaveis_explicaveis, colunas_numericas)
+        variaveis_explicaveis = self.corrigir_valores_numericos(
+            variaveis_explicaveis,
+            colunas_numericas,
+        )
 
-        # Criar o modelo de one hot encoding e transformar as variáveis explicativas
-        variaveis_explicaveis = Modelos.criar_one_hot_model(variaveis_explicaveis=variaveis_explicaveis)
+        # Mantem o target alinhado com possiveis drops de linhas invalidas.
+        variavel_target = variavel_target.loc[variaveis_explicaveis.index]
 
-        return variaveis_explicaveis, variavel_target
+        return variaveis_explicaveis, variavel_target.to_numpy()
