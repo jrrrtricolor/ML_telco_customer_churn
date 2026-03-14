@@ -16,7 +16,8 @@ class EDA:
         dados["TotalCharges"] = dados["TotalCharges"].replace(" ", np.nan)
 
         # converter para número
-        dados["TotalCharges"] = pd.to_numeric(dados["TotalCharges"], errors="coerce")
+        dados["TotalCharges"] = pd.to_numeric(
+            dados["TotalCharges"], errors="coerce")
 
         # encontrar valores faltantes
         mask = dados["TotalCharges"].isna()
@@ -26,8 +27,8 @@ class EDA:
 
         # calcular valor correto
         dados.loc[mask, "TotalCharges"] = (
-                dados.loc[mask, "MonthlyCharges"] *
-                tenure_ajustado.loc[mask]
+            dados.loc[mask, "MonthlyCharges"] *
+            tenure_ajustado.loc[mask]
         )
 
         return dados
@@ -46,7 +47,8 @@ class EDA:
                 )
 
         colunas_existentes = [
-            coluna for coluna in colunas_numericas_list if coluna in dados.columns
+            coluna for coluna in colunas_numericas_list
+            if coluna in dados.columns
         ]
         if colunas_existentes:
             dados = dados.dropna(subset=colunas_existentes)
@@ -71,7 +73,8 @@ class EDA:
         )
 
         # Corrigir os valores da coluna TotalCharges
-        variaveis_explicaveis = self.corrigir_valores_total_charges(variaveis_explicaveis)
+        variaveis_explicaveis = self.corrigir_valores_total_charges(
+            variaveis_explicaveis)
 
         # Corrigir valores numéricos sem aplicar escala global.
         # A escala sera feita no pipeline, apos o split, para evitar leakage.

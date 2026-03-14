@@ -6,6 +6,7 @@ import pandas as pd
 
 LOGGER = logging.getLogger(__name__)
 
+
 class Arquivo:
     @staticmethod
     def carregar_dados(path: str) -> pd.DataFrame:

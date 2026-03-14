@@ -11,7 +11,12 @@ LOGGER = logging.getLogger(__name__)
 class Relatorio:
 
     @staticmethod
-    def salvar_grafico(fig: go.Figure, file_name: str, path: str, tipo_arquivo: str) -> None:
+    def salvar_grafico(
+        fig: go.Figure,
+        file_name: str,
+        path: str,
+        tipo_arquivo: str,
+    ) -> None:
 
         file_path = os.path.join(path, file_name)
 
@@ -51,4 +56,3 @@ class Relatorio:
                 path="../report/normalizado",
                 tipo_arquivo="png",
             )
-

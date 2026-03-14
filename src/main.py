@@ -14,6 +14,7 @@ def configurar_logging() -> None:
         format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
     )
 
+
 if __name__ == "__main__":
     configurar_logging()
 
@@ -42,7 +43,8 @@ if __name__ == "__main__":
 
     # # Relatorio para validar os dados normalizados
     # base_de_relatorio = pd.concat(
-    #     [variaveis_explicaveis, pd.DataFrame(variavel_target, columns=[COLUNA_TARGET])],
+    #     [variaveis_explicaveis, pd.DataFrame(variavel_target,
+    # columns=[COLUNA_TARGET])],
     #     axis=1
     # )
     # Relatorio.criar_histograma(base_de_relatorio, COLUNA_TARGET)
@@ -54,7 +56,8 @@ if __name__ == "__main__":
     modelos = treino.criar_modelos()
 
     resultados = treino.avaliar_modelos(modelos)
-    LOGGER.info("Resultados dos modelos:\n%s", resultados.to_string(index=False))
+    LOGGER.info("Resultados dos modelos:\n%s",
+                resultados.to_string(index=False))
 
     melhor_modelo = resultados.iloc[0]["modelo"]
 

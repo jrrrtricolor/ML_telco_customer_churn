@@ -49,7 +49,8 @@ class Treino:
 
     def split_dados(self, test_size: float = 0.2) -> None:
 
-        self.x_treino, self.x_teste, self.y_treino, self.y_teste = train_test_split(
+        self.x_treino, self.x_teste,
+        self.y_treino, self.y_teste = train_test_split(
             self.X,
             self.y,
             test_size=test_size,
@@ -100,7 +101,8 @@ class Treino:
         return modelos_treinados
 
     @staticmethod
-    def obter_scores(modelo: Pipeline, x_teste: pd.DataFrame) -> np.ndarray | None:
+    def obter_scores(modelo: Pipeline,
+                     x_teste: pd.DataFrame) -> np.ndarray | None:
         if hasattr(modelo, "predict_proba"):
             probabilidades = modelo.predict_proba(x_teste)
             if probabilidades.ndim == 2 and probabilidades.shape[1] > 1:
@@ -129,7 +131,8 @@ class Treino:
             metricas = {
                 "modelo": nome,
                 "accuracy": accuracy_score(self.y_teste, y_pred),
-                "precision": precision_score(self.y_teste, y_pred, zero_division=0),
+                "precision": precision_score(self.y_teste,
+                                             y_pred, zero_division=0),
                 "recall": recall_score(self.y_teste, y_pred, zero_division=0),
                 "f1": f1_score(self.y_teste, y_pred, zero_division=0),
                 "roc_auc": np.nan,
@@ -140,12 +143,17 @@ class Treino:
                 try:
                     metricas["roc_auc"] = roc_auc_score(self.y_teste, y_score)
                 except ValueError:
-                    LOGGER.warning("Nao foi possivel calcular ROC-AUC para o modelo %s", nome)
+                    LOGGER.warning(
+                        "Nao foi possivel calcular ROC-AUC para o modelo %s",
+                        nome)
 
                 try:
-                    metricas["pr_auc"] = average_precision_score(self.y_teste, y_score)
+                    metricas["pr_auc"] = average_precision_score(
+                        self.y_teste, y_score)
                 except ValueError:
-                    LOGGER.warning("Nao foi possivel calcular PR-AUC para o modelo %s", nome)
+                    LOGGER.warning(
+                        "Nao foi possivel calcular PR-AUC para o modelo %s",
+                        nome)
 
             resultados.append(metricas)
 
@@ -168,16 +176,19 @@ class Treino:
     def plotar_arvore_decisao(self, modelo: Pipeline) -> None:
 
         if not isinstance(modelo, Pipeline):
-            raise TypeError("plotar_arvore_decisao espera um modelo sklearn Pipeline.")
+            raise TypeError(
+                "plotar_arvore_decisao espera um modelo sklearn Pipeline.")
 
         arvore = modelo.named_steps.get("modelo")
         preprocessador = modelo.named_steps.get("preprocessador")
 
         if not isinstance(arvore, DecisionTreeClassifier):
-            raise TypeError("O estimador final nao e uma DecisionTreeClassifier.")
+            raise TypeError(
+                "O estimador final nao e uma DecisionTreeClassifier.")
 
         feature_names = self.X.columns.tolist()
-        if preprocessador is not None and hasattr(preprocessador, "get_feature_names_out"):
+        if preprocessador is not None and hasattr(preprocessador,
+                                                  "get_feature_names_out"):
             feature_names = preprocessador.get_feature_names_out().tolist()
 
         class_names = [str(classe) for classe in np.unique(self.y)]
@@ -200,7 +211,8 @@ class Treino:
     # --------------------------------------------------
 
     @staticmethod
-    def salvar_modelo(modelo, nome_modelo: str, path: str = "models/trained_models") -> None:
+    def salvar_modelo(modelo, nome_modelo: str,
+                      path: str = "models/trained_models") -> None:
 
         os.makedirs(path, exist_ok=True)
 
