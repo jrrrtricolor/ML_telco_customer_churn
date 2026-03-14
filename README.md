@@ -64,6 +64,7 @@ ML_telco_customer_churn/
 | Linguagem          | Python >= 3.10                                |
 | Manipulação de dados | pandas, numpy                               |
 | Machine Learning   | scikit-learn                                  |
+| Experiment Tracking| MLflow                                        |
 | Visualização       | matplotlib, seaborn                           |
 | Notebooks          | Jupyter                                       |
 | Variáveis de ambiente | python-dotenv                              |
@@ -117,26 +118,41 @@ Os notebooks estão organizados na pasta `notebooks/` e devem ser executados na 
 ## 🤖 Como Treinar o Modelo
 
 ```bash
-python src/models/treino.py
+python src/main.py
 ```
+
+O pipeline executa pré-processamento, treino, avaliação e tracking no MLflow.
 
 Os modelos treinados serão salvos em `models/trained_models/`.
 
-Para comparar múltiplos modelos e parâmetros (incluindo árvores):
+Executar interface de experimentos do MLflow:
 
 ```bash
-python src/models/treino_modelos_arvore.py
-```
-
-Para gerar gráficos de justificativa técnica da modelagem:
-
-```bash
-python src/evaluation/graficos_justificativa.py
+mlflow ui --backend-store-uri ./mlruns --port 5000
 ```
 
 Guia de aprendizado passo a passo (iniciante em MLE):
 
 `docs/guia_iniciante_machine_learning_engineering.md`
+
+---
+
+## ✅ Entregas da Fase 1
+
+As atividades da Fase 1 estao formalizadas nos seguintes documentos:
+
+- `docs/ml_canvas_fase1.md`
+- `docs/eda_data_readiness_fase1.md`
+- `docs/plano_experimentos.md`
+- `docs/metricas_negocio.md`
+- `report/relatorio_fase1.md`
+
+Evidencias tecnicas implementadas no codigo:
+
+- baselines com `DummyClassifier` e `LogisticRegression`
+- metricas tecnicas: `AUC-ROC`, `PR-AUC`, `F1`
+- metrica de negocio: custo de churn evitado e retorno liquido estimado
+- tracking no MLflow com parametros, metricas, artefato de modelo e hash do dataset
 
 ---
 
@@ -197,14 +213,11 @@ test: criar estrutura inicial de testes
 
 ## 🚀 Próximos Passos
 
-- [ ] Adicionar dados brutos ao pipeline via DVC ou similar
-- [ ] Implementar pipeline de pré-processamento completo em `src/data/`
-- [ ] Desenvolver engenharia de features em `src/features/`
-- [ ] Treinar e comparar modelos (Regressão Logística, Random Forest, XGBoost)
-- [ ] Avaliar modelos com métricas de negócio (Recall, AUC-ROC, KS Statistic)
-- [ ] Criar dashboard de monitoramento de drift do modelo
-- [ ] Containerizar a aplicação com Docker
-- [ ] Implementar CI/CD com GitHub Actions
+- [ ] Ampliar cobertura de testes automatizados
+- [ ] Implementar camada de servico (FastAPI) para inferencia
+- [ ] Containerizar treino e servico com Docker
+- [ ] Adicionar pipeline de CI/CD
+- [ ] Incluir monitoramento de drift e performance em producao
 
 ---
 

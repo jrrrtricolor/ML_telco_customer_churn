@@ -1,35 +1,51 @@
 import pandas as pd
-from sklearn.compose import make_column_transformer
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
+
 
 class Modelos:
-    def __init__(self, modelo, tokenizer):
-        self.modelo = modelo
+    @staticmethod
+    def criar_preprocessador(
+        variaveis_explicaveis: pd.DataFrame
+                        ) -> ColumnTransformer:
+        colunas_numericas = variaveis_explicaveis.select_dtypes(
+            include=["number"]).columns.tolist()
+        colunas_categoricas = variaveis_explicaveis.select_dtypes(
+            exclude=["number"]).columns.tolist()
+
+        transformadores = []
+
+        if colunas_numericas:
+            transformadores.append(
+                ("numericas", MinMaxScaler(), colunas_numericas))
+
+        if colunas_categoricas:
+            transformadores.append(
+                (
+                    "categoricas",
+                    OneHotEncoder(drop="if_binary",
+                                  handle_unknown="ignore",
+                                  sparse_output=False),
+                    colunas_categoricas,
+                )
+            )
+
+        if not transformadores:
+            raise ValueError(
+                "Nenhuma coluna disponível para preprocessamento.")
+
+        return ColumnTransformer(transformers=transformadores,
+                                 remainder="drop")
 
     @staticmethod
-    def criar_one_hot_model(variaveis_explicaveis: pd.DataFrame) -> pd.DataFrame:
-        # Aplicando o one hot encoding nas variáveis explicativas. Basicamente transforma
-        # as variáveis categóricas em variáveis numéricas, criando uma nova coluna para cada
-        # categoria e atribuindo um valor binário (0 ou 1) para indicar a presença ou ausência
-        # da categoria em cada linha.
+    def criar_pipeline(modelo,
+                       variaveis_explicaveis: pd.DataFrame) -> Pipeline:
+        preprocessador = Modelos.criar_preprocessador(variaveis_explicaveis)
 
-        # Resultado é o modelo que transforma registros em um formato adequado para algoritmos
-        # de machine learning, que geralmente requerem dados numéricos.
-
-        # Definir as colunas para o one hot encoding
-        colunas_para_hot_encode = variaveis_explicaveis.columns
-
-        one_hot = make_column_transformer(
-            (OneHotEncoder(drop='if_binary')
-                 , variaveis_explicaveis.select_dtypes(include=["object", "string"]).columns)
-            , remainder='passthrough'
-            , sparse_threshold=0
+        return Pipeline(
+            steps=[
+                ("preprocessador", preprocessador),
+                ("modelo", modelo),
+            ]
         )
-
-        variaveis_explicaveis = one_hot.fit_transform(variaveis_explicaveis)
-
-        # Criar um DataFrame com os nomes das colunas gerados pelo one hot encoding
-        variaveis_explicaveis = pd.DataFrame(variaveis_explicaveis,
-                                             columns=one_hot.get_feature_names_out(colunas_para_hot_encode))
-
-        return variaveis_explicaveis

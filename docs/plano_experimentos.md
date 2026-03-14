@@ -1,121 +1,94 @@
-# Plano de Experimentos
-## Projeto de Previsão de Churn
+# Plano de Experimentos - Fase 1
 
----
+## 1. Objetivo
 
-# 1. Objetivo
+Executar a trilha completa da Fase 1 para previsao de churn com foco em:
 
-Este documento descreve os experimentos que serão realizados durante o desenvolvimento do modelo de Machine Learning.
+- baseline estatistico (`DummyClassifier`)
+- baseline supervisionado (`LogisticRegression`)
+- comparacao com modelos adicionais (`DecisionTree`, `RandomForest`, `KNN`)
+- registro de experimentos no MLflow com parametros, metricas e versionamento do dataset
 
----
+## 2. Dataset e versionamento
 
-# 2. Dataset
+- Fonte: Telco Customer Churn (Kaggle)
+- Arquivo: `data/raw/Telco_Customer_Churn.csv`
+- Versionamento no tracking: `SHA-256` do arquivo bruto logado por run no MLflow (`dataset_sha256`)
 
-Dataset utilizado:
+## 3. Etapas de execucao
 
-Telco Customer Churn
+### Etapa 1 - EDA e data readiness
 
-Fonte:
-https://www.kaggle.com/datasets/blastchar/telco-customer-churn
+- volume, qualidade, distribuicao e riscos
+- verificacao de consistencia de tipos
+- mapeamento de problemas de dados (`TotalCharges` com valores em branco)
 
----
+### Etapa 2 - Preparacao de dados
 
-# 3. Etapas do Experimento
+- remocao de coluna de identificador (`customerID`)
+- encoding da variavel alvo (`Yes -> 1`, `No -> 0`)
+- split estratificado treino/teste: `80/20`
+- preprocessamento em `Pipeline` para evitar leakage
 
-## Etapa 1 — Exploração dos Dados
+### Etapa 3 - Baselines e modelos comparativos
 
-Objetivo:
+Modelos treinados:
 
-Entender os dados disponíveis.
+- `DummyClassifier(strategy="most_frequent")`
+- `LogisticRegression(max_iter=1000, solver="liblinear")`
+- `DecisionTreeClassifier`
+- `RandomForestClassifier`
+- `KNeighborsClassifier`
 
-Perguntas importantes:
+### Etapa 4 - Avaliacao tecnica
 
-- Qual a taxa de churn do dataset?
-- Clientes com contrato mensal cancelam mais?
-- Clientes novos cancelam mais?
-- Clientes com mensalidade alta cancelam mais?
+Metricas por modelo:
 
-Ferramentas:
+- `accuracy`
+- `precision`
+- `recall`
+- `f1`
+- `roc_auc`
+- `pr_auc`
 
-- Python
-- Pandas
-- Matplotlib
-- Seaborn
+### Etapa 5 - Avaliacao de negocio
 
----
+Metricas de impacto para retencao:
 
-## Etapa 2 — Preparação dos Dados
+- `contatos_campanha`
+- `churn_evitado_estimado`
+- `custo_churn_evitado`
+- `custo_campanha_retencao`
+- `retorno_liquido_estimado`
 
-Atividades:
+## 4. Tracking no MLflow
 
-- tratamento de valores nulos
-- conversão de variáveis categóricas
-- preparação da variável alvo
+Cada run registra:
 
-Conversão da coluna churn:
+- parametros globais (`test_size`, `random_state`)
+- parametros do estimador
+- metricas tecnicas e de negocio
+- assinatura/versionamento do dataset (`dataset_sha256`)
+- artefato do modelo (`mlflow.sklearn.log_model`)
+- artefato auxiliar `dataset_version.json`
 
-Yes → 1  
-No → 0
+## 5. Comandos da Fase 1
 
-Separação dos dados:
+Treino e tracking:
 
-80% treino  
-20% teste
+```bash
+python src/main.py
+```
 
----
+Abrir UI do MLflow local:
 
-## Etapa 3 — Modelo Baseline
+```bash
+mlflow ui --backend-store-uri ./mlruns --port 5000
+```
 
-Treinar um modelo simples para servir como referência.
+## 6. Critérios de aceite da Fase 1
 
-Modelo inicial sugerido:
-
-Logistic Regression
-
----
-
-## Etapa 4 — Avaliação do Modelo
-
-Métricas utilizadas:
-
-- Accuracy
-- Precision
-- Recall
-- F1 Score
-- AUC
-
----
-
-## Etapa 5 — Melhorias no Modelo
-
-Possíveis melhorias:
-
-- testar outros algoritmos
-- ajustar parâmetros
-- selecionar melhores features
-
-Modelos possíveis:
-
-- Decision Tree
-- Random Forest
-- Gradient Boosting
-
----
-
-# 4. Registro dos Experimentos
-
-Os experimentos serão documentados nos notebooks.
-
-Estrutura sugerida:
-
-notebooks/
-
-01_exploracao_dados.ipynb  
-02_preparacao_dados.ipynb  
-03_modelo_baseline.ipynb
-
----
-
-# 5. Resultado Esperado
-
-Ao final dos experimentos esperamos obter um modelo capaz de prever churn com boa precisão.
+- ML Canvas preenchido com stakeholders, metricas de negocio e SLOs
+- EDA registrada com volume, qualidade, distribuicao e readiness
+- baselines Dummy + Logistic treinados e comparados
+- runs disponiveis no MLflow com parametros, metricas e dataset version
