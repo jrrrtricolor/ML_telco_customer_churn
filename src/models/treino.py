@@ -1,15 +1,21 @@
 import logging
 import os
+from hashlib import sha256
+from pathlib import Path
 
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import mlflow
+import mlflow.sklearn
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
+    confusion_matrix,
     f1_score,
     precision_score,
     recall_score,
@@ -31,12 +37,19 @@ class Treino:
         self,
         variaveis_explicaveis: pd.DataFrame,
         variavel_target: pd.Series,
-        random_state: int = 42
+        random_state: int = 42,
+        valor_medio_churn_evitado: float = 1000.0,
+        custo_contato_retencao: float = 40.0,
+        taxa_sucesso_retencao: float = 0.35,
     ):
 
         self.X = variaveis_explicaveis
         self.y = variavel_target
         self.random_state = random_state
+        self.valor_medio_churn_evitado = valor_medio_churn_evitado
+        self.custo_contato_retencao = custo_contato_retencao
+        self.taxa_sucesso_retencao = taxa_sucesso_retencao
+        self.test_size: float | None = None
 
         self.x_treino = None
         self.x_teste = None
@@ -49,7 +62,12 @@ class Treino:
 
     def split_dados(self, test_size: float = 0.2) -> None:
 
-        self.x_treino, self.x_teste, self.y_treino, self.y_teste = train_test_split(
+        self.test_size = test_size
+
+        (self.x_treino,
+         self.x_teste,
+         self.y_treino,
+         self.y_teste) = train_test_split(
             self.X,
             self.y,
             test_size=test_size,
@@ -68,6 +86,12 @@ class Treino:
         modelos_base = {
 
             "dummy": DummyClassifier(strategy="most_frequent"),
+
+            "logistic_regression": LogisticRegression(
+                max_iter=1000,
+                solver="liblinear",
+                random_state=self.random_state,
+            ),
 
             "decision_tree": DecisionTreeClassifier(
                 random_state=self.random_state
@@ -98,6 +122,63 @@ class Treino:
             LOGGER.info("Modelo treinado: %s", nome)
 
         return modelos_treinados
+
+    def calcular_metricas_negocio(
+        self,
+        y_true: np.ndarray,
+        y_pred: np.ndarray,
+    ) -> dict[str, float]:
+
+        tn, fp, fn, tp = confusion_matrix(
+            y_true, y_pred, labels=[0, 1]).ravel()
+
+        contatos_campanha = fp + tp
+        churn_evitado_estimado = tp * self.taxa_sucesso_retencao
+        custo_churn_evitado = (churn_evitado_estimado *
+                               self.valor_medio_churn_evitado)
+        custo_campanha = contatos_campanha * self.custo_contato_retencao
+        retorno_liquido = custo_churn_evitado - custo_campanha
+
+        return {
+            "contatos_campanha": float(contatos_campanha),
+            "churn_evitado_estimado": float(churn_evitado_estimado),
+            "custo_churn_evitado": float(custo_churn_evitado),
+            "custo_campanha_retencao": float(custo_campanha),
+            "retorno_liquido_estimado": float(retorno_liquido),
+            "tp": float(tp),
+            "fp": float(fp),
+            "fn": float(fn),
+            "tn": float(tn),
+        }
+
+    @staticmethod
+    def calcular_hash_arquivo(caminho_arquivo: str) -> str:
+
+        arquivo_hash = sha256()
+
+        with Path(caminho_arquivo).open("rb") as arquivo:
+            for bloco in iter(lambda: arquivo.read(8192), b""):
+                arquivo_hash.update(bloco)
+
+        return arquivo_hash.hexdigest()
+
+    @staticmethod
+    def extrair_parametros_estimador(
+        modelo: Pipeline,
+    ) -> dict[str, str | int | float | bool]:
+
+        estimador = modelo.named_steps.get("modelo")
+        if estimador is None:
+            return {}
+
+        parametros = estimador.get_params()
+        parametros_filtrados: dict[str, str | int | float | bool] = {}
+
+        for chave, valor in parametros.items():
+            if isinstance(valor, (str, int, float, bool)):
+                parametros_filtrados[chave] = valor
+
+        return parametros_filtrados
 
     @staticmethod
     def obter_scores(modelo: Pipeline,
@@ -138,6 +219,10 @@ class Treino:
                 "pr_auc": np.nan,
             }
 
+            metricas_negocio = self.calcular_metricas_negocio(
+                self.y_teste, y_pred)
+            metricas.update(metricas_negocio)
+
             if y_score is not None:
                 try:
                     metricas["roc_auc"] = roc_auc_score(self.y_teste, y_score)
@@ -159,7 +244,14 @@ class Treino:
         df_resultados = pd.DataFrame(resultados)
 
         df_resultados = df_resultados.sort_values(
-            by=["roc_auc", "pr_auc", "f1", "recall", "accuracy"],
+            by=[
+                "roc_auc",
+                "pr_auc",
+                "f1",
+                "recall",
+                "accuracy",
+                "retorno_liquido_estimado",
+            ],
             ascending=False,
             na_position="last",
         )
@@ -167,6 +259,67 @@ class Treino:
         df_resultados = df_resultados.reset_index(drop=True)
 
         return df_resultados
+
+    def registrar_experimentos_mlflow(
+        self,
+        modelos: dict[str, Pipeline],
+        resultados: pd.DataFrame,
+        dataset_path: str,
+        nome_experimento: str = "telco_churn_fase1",
+    ) -> None:
+
+        if self.test_size is None:
+            raise ValueError(
+                "Execute split_dados antes de "
+                "registrar experimentos no MLflow.")
+
+        mlflow.set_experiment(nome_experimento)
+
+        dataset_hash = self.calcular_hash_arquivo(dataset_path)
+        dataset_info = {
+            "dataset_path": dataset_path,
+            "dataset_sha256": dataset_hash,
+            "linhas": int(self.X.shape[0]),
+            "colunas": int(self.X.shape[1]),
+            "target_distribuicao": {
+                "classe_0": int((self.y == 0).sum()),
+                "classe_1": int((self.y == 1).sum()),
+            },
+        }
+
+        for _, linha_resultado in resultados.iterrows():
+            nome_modelo = str(linha_resultado["modelo"])
+            modelo = modelos[nome_modelo]
+
+            with mlflow.start_run(run_name=f"fase1_{nome_modelo}"):
+                mlflow.log_param("modelo", nome_modelo)
+                mlflow.log_param("random_state", self.random_state)
+                mlflow.log_param("test_size", self.test_size)
+                mlflow.log_param("dataset_path", dataset_path)
+                mlflow.log_param("dataset_sha256", dataset_hash)
+
+                parametros_estimador = self.extrair_parametros_estimador(
+                    modelo)
+                if parametros_estimador:
+                    mlflow.log_params(parametros_estimador)
+
+                metricas_log: dict[str, float] = {}
+                for coluna in resultados.columns:
+                    valor = linha_resultado[coluna]
+                    if coluna == "modelo":
+                        continue
+
+                    if pd.notna(valor):
+                        metricas_log[coluna] = float(valor)
+
+                if metricas_log:
+                    mlflow.log_metrics(metricas_log)
+
+                mlflow.log_dict(dataset_info, "dataset_version.json")
+                mlflow.sklearn.log_model(modelo, name="modelo")
+
+                LOGGER.info(
+                    "Run MLflow registrado para o modelo: %s", nome_modelo)
 
     # --------------------------------------------------
     # Plotar árvore de decisão

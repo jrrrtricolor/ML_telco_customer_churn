@@ -1,76 +1,66 @@
-# Métricas de Negócio
-## Projeto de Previsão de Churn
+# Metricas Tecnicas e de Negocio - Fase 1
 
----
+## 1. Objetivo
 
-# 1. Objetivo
+Definir as metricas de validacao para o problema de churn combinando:
 
-As métricas de negócio ajudam a avaliar se o modelo de Machine Learning realmente gera valor para a empresa.
+- desempenho tecnico de classificacao
+- impacto financeiro estimado para acao de retencao
 
-O objetivo é reduzir a perda de clientes.
+## 2. Metricas tecnicas (modelo)
 
----
+Metricas obrigatorias para comparacao entre modelos:
 
-# 2. Taxa de Churn
+- `AUC-ROC`
+- `PR-AUC`
+- `F1 Score`
 
-A taxa de churn representa a porcentagem de clientes que cancelam o serviço.
+Metricas complementares:
 
-Fórmula:
+- `Accuracy`
+- `Precision`
+- `Recall`
 
-Taxa de Churn = Clientes que cancelaram / Total de clientes
+## 3. Metrica de negocio principal
 
-Exemplo:
+### Custo de churn evitado
 
-100 cancelamentos  
-1000 clientes
+Representa o valor financeiro bruto associado a clientes com churn potencialmente evitado por campanha de retencao.
 
-Taxa de churn = 10%
+Formula usada no projeto:
 
----
+`custo_churn_evitado = churn_evitado_estimado * valor_medio_churn_evitado`
 
-# 3. Identificação de Clientes em Risco
+Onde:
 
-O modelo deve identificar clientes com maior probabilidade de cancelar o serviço.
+- `churn_evitado_estimado = TP * taxa_sucesso_retencao`
+- `TP` = clientes corretamente classificados como churn
 
-Esses clientes poderão receber ações de retenção como:
+## 4. Metrica de negocio derivada
 
-- descontos
-- upgrades de plano
-- contato da equipe de atendimento
+### Retorno liquido estimado
 
----
+Formula:
 
-# 4. Eficiência das Campanhas
+`retorno_liquido_estimado = custo_churn_evitado - custo_campanha_retencao`
 
-Após identificar clientes com risco de churn, a empresa pode realizar campanhas de retenção.
+Com:
 
-Exemplo:
+- `custo_campanha_retencao = contatos_campanha * custo_contato_retencao`
+- `contatos_campanha = TP + FP`
 
-Clientes identificados: 100
+## 5. Parametros financeiros default usados na Fase 1
 
-Após campanha:
+- `valor_medio_churn_evitado = 1000.0`
+- `custo_contato_retencao = 40.0`
+- `taxa_sucesso_retencao = 0.35`
 
-60 permaneceram  
-40 cancelaram
+Esses valores sao premissas iniciais para benchmarking e devem ser recalibrados com dados reais de negocio.
 
-Taxa de retenção = 60%
+## 6. Como interpretar
 
----
+- modelo com melhor `AUC-ROC` e `PR-AUC` tende a separar melhor classes
+- modelo com melhor `F1` tende a equilibrar precision e recall
+- modelo com maior `retorno_liquido_estimado` tende a ser mais util para campanha
 
-# 5. Redução de Perda de Receita
-
-Cada cliente cancelado representa perda financeira.
-
-Ao identificar clientes com risco de churn, a empresa pode reduzir essa perda.
-
-Objetivo esperado:
-
-Reduzir churn entre **10% e 20%**.
-
----
-
-# 6. Benefícios Esperados
-
-- Melhor retenção de clientes
-- Redução de perdas financeiras
-- Melhor tomada de decisão
+Decisao final de deploy deve combinar metrica tecnica e metrica financeira.

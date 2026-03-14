@@ -22,6 +22,9 @@ if __name__ == "__main__":
 
     DADOS_PATH = ROOT_DIR / "data/raw/Telco_Customer_Churn.csv"
     COLUNA_TARGET = "Churn"
+    RESULTADOS_PATH = ROOT_DIR / "report" / "publicacao_modelo_dev"
+
+    RESULTADOS_PATH.mkdir(parents=True, exist_ok=True)
 
     # Carregar os dados
     pd_dados = Arquivo.carregar_dados(str(DADOS_PATH))
@@ -56,8 +59,21 @@ if __name__ == "__main__":
     modelos = treino.criar_modelos()
 
     resultados = treino.avaliar_modelos(modelos)
+
+    resultados.to_csv(
+        RESULTADOS_PATH / "resultados_modelos_fase1.csv",
+        index=False,
+    )
+
     LOGGER.info("Resultados dos modelos:\n%s",
                 resultados.to_string(index=False))
+
+    treino.registrar_experimentos_mlflow(
+        modelos=modelos,
+        resultados=resultados,
+        dataset_path=str(DADOS_PATH),
+        nome_experimento="telco_churn_fase1",
+    )
 
     melhor_modelo = resultados.iloc[0]["modelo"]
 
