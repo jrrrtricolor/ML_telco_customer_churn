@@ -62,6 +62,9 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
 
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["EDA"]
+
 # ---------------------------------------------------------------------------
 # Configuração do Pytest
 # ---------------------------------------------------------------------------

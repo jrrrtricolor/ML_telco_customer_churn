@@ -1,0 +1,31 @@
+name: Gerar relatorio de commit
+
+on:
+  push:
+    paths-ignore:
+      - "report/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  gerar-relatorio:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Gerar relatorio de commit
+        uses: ./.github/actions/gerar-relatorio-commit

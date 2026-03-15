@@ -1,0 +1,5 @@
+[core]
+    remote = storage
+['remote "storage"']
+    url = s3://9mlet-dvc-store-757622030567-sa-east-1-an/ML_telco_customer_churn
+    connect_timeout = 300
