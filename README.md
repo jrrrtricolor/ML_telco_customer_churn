@@ -103,6 +103,13 @@ source .venv/bin/activate        # Linux / macOS
 pip install -e ".[dev]"
 ```
 
+### 4. Instale o DVC
+
+[Veja aqui](https://doc.dvc.org/start)
+
+- Configure suas credenciais do S3
+- Executar `dvc pull`
+
 ---
 
 ## 📓 Como Executar os Notebooks

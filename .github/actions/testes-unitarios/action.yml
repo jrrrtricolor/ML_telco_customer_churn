@@ -1,0 +1,14 @@
+name: Testes Unitários de dados
+
+runs:
+  using: composite
+  steps:
+    - name: Instalar dependencias
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -e ".[dev]"
+
+    - name: Executar testes unitarios
+      shell: bash
+      run: python -m pytest

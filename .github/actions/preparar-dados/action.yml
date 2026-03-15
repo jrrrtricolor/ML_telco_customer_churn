@@ -1,0 +1,22 @@
+name: Preparar dados para treino
+
+runs:
+  using: composite
+  steps:
+    - name: Instalar dependencias
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -e ".[dev]"
+        python -m pip install dvc dvc-s3
+
+    - name: Baixar dados
+      shell: bash
+      run: |
+        python -m dvc remote modify --local storage access_key_id "$AWS_ACCESS_KEY"
+        python -m dvc remote modify --local storage secret_access_key "$AWS_SECRET_KEY"
+        python -m dvc pull
+
+    - name: Preparar dados para relatorio
+      shell: bash
+      run: python src/preprocess.py
