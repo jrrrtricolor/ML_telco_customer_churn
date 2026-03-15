@@ -1,4 +1,4 @@
-name: Testes Unitários de dados
+name: Testes Unitários e dados
 
 runs:
   using: composite
