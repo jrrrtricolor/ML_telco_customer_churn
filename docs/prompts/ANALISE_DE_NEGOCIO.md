@@ -76,6 +76,7 @@ Gere o documento com estas secoes, nesta ordem:
 - Pergunta analitica principal.
 - Definicao de sucesso de negocio (KPI de retencao, custo evitado, uplift esperado).
 - Definicao de sucesso tecnico (metricas alvo) (acurácia, precisão, recall, F1, latência de API, disponibilidade de API, taxa de Erro de API).
+- Conexão entre sucesso técnico e sucesso de negócio. Exemplo: Com X% de acurácia alcaçamos X% de previsões
 
 3. Dados disponíveis e LGPD
 
