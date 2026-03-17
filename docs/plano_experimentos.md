@@ -77,13 +77,13 @@ Cada run registra:
 Treino e tracking:
 
 ```bash
-python src/main.py
+python -m src.main
 ```
 
 Abrir UI do MLflow local:
 
 ```bash
-mlflow ui --backend-store-uri ./mlruns --port 5000
+mlflow ui --backend-store-uri "sqlite:///$(pwd)/mlflow.db" --port 5000
 ```
 
 ## 6. Critérios de aceite da Fase 1

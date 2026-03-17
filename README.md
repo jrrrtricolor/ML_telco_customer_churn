@@ -125,17 +125,19 @@ Os notebooks estão organizados na pasta `notebooks/` e devem ser executados na 
 ## 🤖 Como Treinar o Modelo
 
 ```bash
-python src/main.py
+python -m src.main
 ```
 
 O pipeline executa pré-processamento, treino, avaliação e tracking no MLflow.
+
+Execute os comandos na raiz do projeto para manter o tracking consistente.
 
 Os modelos treinados serão salvos em `models/trained_models/`.
 
 Executar interface de experimentos do MLflow:
 
 ```bash
-mlflow ui --backend-store-uri ./mlruns --port 5000
+mlflow ui --backend-store-uri "sqlite:///$(pwd)/mlflow.db" --port 5000
 ```
 
 Guia de aprendizado passo a passo (iniciante em MLE):
