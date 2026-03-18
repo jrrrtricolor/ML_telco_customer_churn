@@ -119,33 +119,6 @@ class Treino:
 
         return modelos_treinados
 
-    def calcular_metricas_negocio(
-        self,
-        y_true: np.ndarray,
-        y_pred: np.ndarray,
-    ) -> dict[str, float]:
-
-        tn, fp, fn, tp = confusion_matrix(
-            y_true, y_pred, labels=[0, 1]).ravel()
-
-        contatos_campanha = fp + tp
-        churn_evitado_estimado = tp * self.taxa_sucesso_retencao
-        custo_churn_evitado = (churn_evitado_estimado *
-                               self.valor_medio_churn_evitado)
-        custo_campanha = contatos_campanha * self.custo_contato_retencao
-        retorno_liquido = custo_churn_evitado - custo_campanha
-
-        return {
-            "contatos_campanha": float(contatos_campanha),
-            "churn_evitado_estimado": float(churn_evitado_estimado),
-            "custo_churn_evitado": float(custo_churn_evitado),
-            "custo_campanha_retencao": float(custo_campanha),
-            "retorno_liquido_estimado": float(retorno_liquido),
-            "tp": float(tp),
-            "fp": float(fp),
-            "fn": float(fn),
-            "tn": float(tn),
-        }
 
     @staticmethod
     def calcular_hash_arquivo(caminho_arquivo: str) -> str:
@@ -215,10 +188,6 @@ class Treino:
                 "pr_auc": np.nan,
             }
 
-            metricas_negocio = self.calcular_metricas_negocio(
-                self.y_teste, y_pred)
-            metricas.update(metricas_negocio)
-
             if y_score is not None:
                 try:
                     metricas["roc_auc"] = roc_auc_score(self.y_teste, y_score)
@@ -245,8 +214,7 @@ class Treino:
                 "pr_auc",
                 "f1",
                 "recall",
-                "accuracy",
-                "retorno_liquido_estimado",
+                "accuracy"
             ],
             ascending=False,
             na_position="last",
@@ -309,13 +277,13 @@ class Treino:
                     mlflow.log_params(parametros_estimador)
 
                 metricas_log: dict[str, float] = {}
-                for coluna in resultados.columns:
-                    valor = linha_resultado[coluna]
-                    if coluna == "modelo":
-                        continue
-
-                    if pd.notna(valor):
-                        metricas_log[coluna] = float(valor)
+                # for coluna in resultados.columns:
+                #     valor = linha_resultado[coluna]
+                #     if coluna == "modelo":
+                #         continue
+                #
+                #     if pd.notna(valor):
+                #         metricas_log[coluna] = float(valor)
 
                 if metricas_log:
                     mlflow.log_metrics(metricas_log)
