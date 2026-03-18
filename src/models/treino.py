@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
@@ -81,29 +80,26 @@ class Treino:
     # Criar modelos
     # --------------------------------------------------
 
-    def criar_modelos(self) -> dict[str, Pipeline]:
+    def criar_modelos(self, max_depth: int | None, kn_neighbors: int | None) -> dict[str, Pipeline]:
 
         modelos_base = {
 
             "dummy": DummyClassifier(strategy="most_frequent"),
 
-            "logistic_regression": LogisticRegression(
-                max_iter=1000,
-                solver="liblinear",
-                random_state=self.random_state,
-            ),
-
             "decision_tree": DecisionTreeClassifier(
                 random_state=self.random_state
+                ,max_depth=max_depth
             ),
 
             "random_forest": RandomForestClassifier(
                 n_estimators=100,
-                random_state=self.random_state
+                random_state=self.random_state,
+                max_depth=max_depth,
+
             ),
 
             "knn": KNeighborsClassifier(
-                n_neighbors=5
+                n_neighbors=kn_neighbors
             )
         }
 
@@ -123,33 +119,6 @@ class Treino:
 
         return modelos_treinados
 
-    def calcular_metricas_negocio(
-        self,
-        y_true: np.ndarray,
-        y_pred: np.ndarray,
-    ) -> dict[str, float]:
-
-        tn, fp, fn, tp = confusion_matrix(
-            y_true, y_pred, labels=[0, 1]).ravel()
-
-        contatos_campanha = fp + tp
-        churn_evitado_estimado = tp * self.taxa_sucesso_retencao
-        custo_churn_evitado = (churn_evitado_estimado *
-                               self.valor_medio_churn_evitado)
-        custo_campanha = contatos_campanha * self.custo_contato_retencao
-        retorno_liquido = custo_churn_evitado - custo_campanha
-
-        return {
-            "contatos_campanha": float(contatos_campanha),
-            "churn_evitado_estimado": float(churn_evitado_estimado),
-            "custo_churn_evitado": float(custo_churn_evitado),
-            "custo_campanha_retencao": float(custo_campanha),
-            "retorno_liquido_estimado": float(retorno_liquido),
-            "tp": float(tp),
-            "fp": float(fp),
-            "fn": float(fn),
-            "tn": float(tn),
-        }
 
     @staticmethod
     def calcular_hash_arquivo(caminho_arquivo: str) -> str:
@@ -219,10 +188,6 @@ class Treino:
                 "pr_auc": np.nan,
             }
 
-            metricas_negocio = self.calcular_metricas_negocio(
-                self.y_teste, y_pred)
-            metricas.update(metricas_negocio)
-
             if y_score is not None:
                 try:
                     metricas["roc_auc"] = roc_auc_score(self.y_teste, y_score)
@@ -249,8 +214,7 @@ class Treino:
                 "pr_auc",
                 "f1",
                 "recall",
-                "accuracy",
-                "retorno_liquido_estimado",
+                "accuracy"
             ],
             ascending=False,
             na_position="last",
@@ -266,12 +230,21 @@ class Treino:
         resultados: pd.DataFrame,
         dataset_path: str,
         nome_experimento: str = "telco_churn_fase1",
+        tracking_uri: str | None = None,
     ) -> None:
 
         if self.test_size is None:
             raise ValueError(
                 "Execute split_dados antes de "
                 "registrar experimentos no MLflow.")
+
+        if tracking_uri:
+            mlflow.set_tracking_uri(tracking_uri)
+
+        LOGGER.info(
+            "MLflow tracking URI em uso: %s",
+            mlflow.get_tracking_uri(),
+        )
 
         mlflow.set_experiment(nome_experimento)
 
@@ -291,7 +264,7 @@ class Treino:
             nome_modelo = str(linha_resultado["modelo"])
             modelo = modelos[nome_modelo]
 
-            with mlflow.start_run(run_name=f"fase1_{nome_modelo}"):
+            with mlflow.start_run(run_name=f"{nome_modelo}"):
                 mlflow.log_param("modelo", nome_modelo)
                 mlflow.log_param("random_state", self.random_state)
                 mlflow.log_param("test_size", self.test_size)
@@ -304,13 +277,13 @@ class Treino:
                     mlflow.log_params(parametros_estimador)
 
                 metricas_log: dict[str, float] = {}
-                for coluna in resultados.columns:
-                    valor = linha_resultado[coluna]
-                    if coluna == "modelo":
-                        continue
-
-                    if pd.notna(valor):
-                        metricas_log[coluna] = float(valor)
+                # for coluna in resultados.columns:
+                #     valor = linha_resultado[coluna]
+                #     if coluna == "modelo":
+                #         continue
+                #
+                #     if pd.notna(valor):
+                #         metricas_log[coluna] = float(valor)
 
                 if metricas_log:
                     mlflow.log_metrics(metricas_log)

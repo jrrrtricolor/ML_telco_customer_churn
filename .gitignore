@@ -102,3 +102,6 @@ mlartifacts/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+.agents
+ML_telco_customer_churn.code-workspace
+mlflow.db

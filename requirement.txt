@@ -11,6 +11,7 @@ annotated-types==0.7.0
 antlr4-python3-runtime==4.9.3
 anyio==4.12.1
 appdirs==1.4.4
+appnope==0.1.4
 argon2-cffi==25.1.0
 argon2-cffi-bindings==25.1.0
 arrow==1.4.0
@@ -151,6 +152,7 @@ opentelemetry-semantic-conventions==0.61b0
 orjson==3.11.7
 packaging==26.0
 pandas==2.3.3
+pandas-stubs==2.3.3.260113
 pandocfilters==1.5.1
 parso==0.8.6
 pathspec==1.0.4
@@ -225,6 +227,7 @@ tornado==6.5.5
 tqdm==4.67.3
 traitlets==5.14.3
 typer==0.24.1
+types-pytz==2026.1.1.20260304
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.3

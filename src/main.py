@@ -19,12 +19,15 @@ if __name__ == "__main__":
     configurar_logging()
 
     ROOT_DIR = Path(__file__).resolve().parents[1]
+    MLFLOW_DB_PATH = ROOT_DIR / "mlflow.db"
+    MLFLOW_ARTIFACTS_PATH = ROOT_DIR / "mlruns"
 
     DADOS_PATH = ROOT_DIR / "data/raw/Telco_Customer_Churn.csv"
     COLUNA_TARGET = "Churn"
     RESULTADOS_PATH = ROOT_DIR / "report" / "publicacao_modelo_dev"
 
     RESULTADOS_PATH.mkdir(parents=True, exist_ok=True)
+    MLFLOW_ARTIFACTS_PATH.mkdir(parents=True, exist_ok=True)
 
     # Carregar os dados
     pd_dados = Arquivo.carregar_dados(str(DADOS_PATH))
@@ -56,7 +59,7 @@ if __name__ == "__main__":
 
     treino.split_dados()
 
-    modelos = treino.criar_modelos()
+    modelos = treino.criar_modelos(max_depth=2, kn_neighbors= 3 )
 
     resultados = treino.avaliar_modelos(modelos)
 
@@ -73,6 +76,7 @@ if __name__ == "__main__":
         resultados=resultados,
         dataset_path=str(DADOS_PATH),
         nome_experimento="telco_churn_fase1",
+        tracking_uri=f"sqlite:///{MLFLOW_DB_PATH}",
     )
 
     melhor_modelo = resultados.iloc[0]["modelo"]
