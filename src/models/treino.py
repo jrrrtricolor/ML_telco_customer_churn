@@ -33,13 +33,13 @@ LOGGER = logging.getLogger(__name__)
 class Treino:
 
     def __init__(
-        self,
-        variaveis_explicaveis: pd.DataFrame,
-        variavel_target: pd.Series,
-        random_state: int = 42,
-        valor_medio_churn_evitado: float = 1000.0,
-        custo_contato_retencao: float = 40.0,
-        taxa_sucesso_retencao: float = 0.35,
+            self,
+            variaveis_explicaveis: pd.DataFrame,
+            variavel_target: pd.Series,
+            random_state: int = 42,
+            valor_medio_churn_evitado: float = 1000.0,
+            custo_contato_retencao: float = 40.0,
+            taxa_sucesso_retencao: float = 0.35,
     ):
 
         self.X = variaveis_explicaveis
@@ -88,7 +88,7 @@ class Treino:
 
             "decision_tree": DecisionTreeClassifier(
                 random_state=self.random_state
-                ,max_depth=max_depth
+                , max_depth=max_depth
             ),
 
             "random_forest": RandomForestClassifier(
@@ -119,7 +119,6 @@ class Treino:
 
         return modelos_treinados
 
-
     @staticmethod
     def calcular_hash_arquivo(caminho_arquivo: str) -> str:
 
@@ -133,7 +132,7 @@ class Treino:
 
     @staticmethod
     def extrair_parametros_estimador(
-        modelo: Pipeline,
+            modelo: Pipeline,
     ) -> dict[str, str | int | float | bool]:
 
         estimador = modelo.named_steps.get("modelo")
@@ -225,12 +224,12 @@ class Treino:
         return df_resultados
 
     def registrar_experimentos_mlflow(
-        self,
-        modelos: dict[str, Pipeline],
-        resultados: pd.DataFrame,
-        dataset_path: str,
-        nome_experimento: str = "telco_churn_fase1",
-        tracking_uri: str | None = None,
+            self,
+            modelos: dict[str, Pipeline],
+            resultados: pd.DataFrame,
+            dataset_path: str,
+            nome_experimento: str = "telco_churn_fase1",
+            tracking_uri: str | None = None,
     ) -> None:
 
         if self.test_size is None:
@@ -277,13 +276,17 @@ class Treino:
                     mlflow.log_params(parametros_estimador)
 
                 metricas_log: dict[str, float] = {}
-                # for coluna in resultados.columns:
-                #     valor = linha_resultado[coluna]
-                #     if coluna == "modelo":
-                #         continue
-                #
-                #     if pd.notna(valor):
-                #         metricas_log[coluna] = float(valor)
+                for coluna in ["roc_auc",
+                               "pr_auc",
+                               "f1",
+                               "recall",
+                               "accuracy"]:
+                    valor = linha_resultado[coluna]
+                    if coluna == "modelo":
+                        continue
+
+                    if pd.notna(valor):
+                        metricas_log[coluna] = float(valor)
 
                 if metricas_log:
                     mlflow.log_metrics(metricas_log)
