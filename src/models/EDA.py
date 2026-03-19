@@ -4,8 +4,15 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class EDA:
-    def __init__(self, dados):
-        self.dados = dados
+    def __init__(self):
+        self.colunas_a_remover = ["customerID"]
+        self.coluna_target = "Churn"
+        self.label_encoder = LabelEncoder()
+        self.colunas_numericas = [
+            "tenure",
+            "MonthlyCharges",
+            "TotalCharges",
+        ]
 
     @staticmethod
     def corrigir_valores_total_charges(dados: pd.DataFrame) -> pd.DataFrame:
@@ -55,40 +62,45 @@ class EDA:
 
         return dados
 
-    def normalizar_dados(
-        self,
-        colunas_a_remover: list[str],
-        coluna_target: str,
-    ) -> tuple[pd.DataFrame, np.ndarray]:
-        # Separar as variáveis explicativas e a variável target
-        dados = self.dados.drop(columns=colunas_a_remover).copy()
-        variaveis_explicaveis = dados.drop(columns=[coluna_target]).copy()
-
-        # Transformando a variavel alvo.
-        label_encoder = LabelEncoder()
-        variavel_target = pd.Series(
-            label_encoder.fit_transform(dados[coluna_target]),
-            index=dados.index,
-            name=coluna_target,
-        )
-
+    def processar_dados(self, x: pd.DataFrame, y: pd.Series = None) -> tuple[pd.DataFrame, np.ndarray]:
         # Corrigir os valores da coluna TotalCharges
         variaveis_explicaveis = self.corrigir_valores_total_charges(
-            variaveis_explicaveis)
+            x)
 
         # Corrigir valores numéricos sem aplicar escala global.
         # A escala sera feita no pipeline, apos o split, para evitar leakage.
-        colunas_numericas = [
-            "tenure",
-            "MonthlyCharges",
-            "TotalCharges",
-        ]
         variaveis_explicaveis = self.corrigir_valores_numericos(
             variaveis_explicaveis,
-            colunas_numericas,
+            self.colunas_numericas,
         )
 
-        # Mantem o target alinhado com possiveis drops de linhas invalidas.
-        variavel_target = variavel_target.loc[variaveis_explicaveis.index]
+        if y is not None:
+            # Mantem o target alinhado com possiveis drops de linhas invalidas.
+            variavel_target = y.loc[variaveis_explicaveis.index]
 
-        return variaveis_explicaveis, variavel_target.to_numpy()
+            return variaveis_explicaveis, variavel_target.to_numpy()
+        
+        return variaveis_explicaveis, None
+
+    def split_dados(self, dados: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
+        variaveis_explicaveis = dados.drop(columns=[self.coluna_target]).copy()
+        variavel_target = dados[self.coluna_target]
+
+        return variaveis_explicaveis, variavel_target
+
+    def normalizar_dados(
+        self,
+        dados: pd.DataFrame,
+    ) -> tuple[pd.DataFrame, np.ndarray]:
+        x, y = self.split_dados(dados.drop(columns=self.colunas_a_remover).copy())
+        
+        variaveis_explicaveis, variavel_target = self.processar_dados(
+            x,
+            pd.Series(
+                self.label_encoder.fit_transform(y),
+                index=x.index,
+                name=self.coluna_target,
+            ) 
+        )
+
+        return variaveis_explicaveis, variavel_target

@@ -14,7 +14,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
-    confusion_matrix,
     f1_score,
     precision_score,
     recall_score,
