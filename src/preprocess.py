@@ -5,19 +5,7 @@ import pandas as pd
 from src.models.EDA import EDA
 from src.utils.arquivo import Arquivo
 
-LOGGER = logging.getLogger(__name__)
-
-
-def configurar_logging() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-    )
-
-
-if __name__ == "__main__":
-    configurar_logging()
-
+def preprocess() -> None:
     ROOT_DIR = Path(__file__).resolve().parents[1]
 
     DADOS_PATH = ROOT_DIR / "data/raw/Telco_Customer_Churn.csv"
@@ -41,3 +29,6 @@ if __name__ == "__main__":
         str(ROOT_DIR / "data/processed"),
         "csv",
     )
+
+if __name__ == "__main__":
+    preprocess()
