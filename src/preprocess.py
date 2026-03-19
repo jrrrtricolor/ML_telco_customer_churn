@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+import pandas as pd
 
 from src.models.EDA import EDA
 from src.utils.arquivo import Arquivo
@@ -20,7 +21,6 @@ if __name__ == "__main__":
     ROOT_DIR = Path(__file__).resolve().parents[1]
 
     DADOS_PATH = ROOT_DIR / "data/raw/Telco_Customer_Churn.csv"
-    COLUNA_TARGET = "Churn"
     RESULTADOS_PATH = ROOT_DIR / "report" / "publicacao_modelo_dev"
 
     RESULTADOS_PATH.mkdir(parents=True, exist_ok=True)
@@ -29,16 +29,15 @@ if __name__ == "__main__":
     pd_dados = Arquivo.carregar_dados(str(DADOS_PATH))
 
     # Corrige qualidade dos dados sem aplicar transformacoes que geram leakage
-    normalizar = EDA(dados=pd_dados)
-    colunas_remover = ["customerID"]
-
+    normalizar = EDA()
+    
     variaveis_explicaveis, variavel_target = normalizar.normalizar_dados(
-        colunas_a_remover=colunas_remover,
-        coluna_target=COLUNA_TARGET,
+        dados=pd_dados
     )
+
     Arquivo.salvar_dados(
-        variaveis_explicaveis,
-        "teste-1-variaveis_explicaveis.csv",
+        pd.concat([variaveis_explicaveis, pd.DataFrame(variavel_target, columns=["Churn"])], axis=1),
+        "teste-2-variaveis_explicaveis.csv",
         str(ROOT_DIR / "data/processed"),
         "csv",
     )

@@ -22,8 +22,7 @@ if __name__ == "__main__":
     MLFLOW_DB_PATH = ROOT_DIR / "mlflow.db"
     MLFLOW_ARTIFACTS_PATH = ROOT_DIR / "mlruns"
 
-    DADOS_PATH = ROOT_DIR / "data/raw/Telco_Customer_Churn.csv"
-    COLUNA_TARGET = "Churn"
+    DADOS_PATH = ROOT_DIR / "data/processed/teste-2-variaveis_explicaveis.csv"
     RESULTADOS_PATH = ROOT_DIR / "report" / "publicacao_modelo_dev"
 
     RESULTADOS_PATH.mkdir(parents=True, exist_ok=True)
@@ -33,18 +32,10 @@ if __name__ == "__main__":
     pd_dados = Arquivo.carregar_dados(str(DADOS_PATH))
 
     # Corrige qualidade dos dados sem aplicar transformacoes que geram leakage
-    normalizar = EDA(dados=pd_dados)
-    colunas_remover = ["customerID"]
+    normalizar = EDA()
 
-    variaveis_explicaveis, variavel_target = normalizar.normalizar_dados(
-        colunas_a_remover=colunas_remover,
-        coluna_target=COLUNA_TARGET,
-    )
-    Arquivo.salvar_dados(
-        variaveis_explicaveis,
-        "teste-1-variaveis_explicaveis.csv",
-        str(ROOT_DIR / "data/processed"),
-        "csv",
+    variaveis_explicaveis, variavel_target = normalizar.split_dados(
+        dados=pd_dados
     )
 
     # # Relatorio para validar os dados normalizados
