@@ -158,7 +158,7 @@ As atividades da Fase 1 estao formalizadas nos seguintes documentos:
 
 Evidencias tecnicas implementadas no codigo:
 
-- baselines com `DummyClassifier` e `LogisticRegression`
+- baselines com `DummyClassifier`, `DecisionTreeClassifier`, `RandomForestClassifier` e `KNeighborsClassifier`
 - metricas tecnicas: `AUC-ROC`, `PR-AUC`, `F1`
 - metrica de negocio: custo de churn evitado e retorno liquido estimado
 - tracking no MLflow com parametros, metricas, artefato de modelo e hash do dataset

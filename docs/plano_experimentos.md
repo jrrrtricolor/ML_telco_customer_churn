@@ -5,8 +5,8 @@
 Executar a trilha completa da Fase 1 para previsao de churn com foco em:
 
 - baseline estatistico (`DummyClassifier`)
-- baseline supervisionado (`LogisticRegression`)
-- comparacao com modelos adicionais (`DecisionTree`, `RandomForest`, `KNN`)
+- baselines supervisionados de arvore e vizinhanca (`DecisionTree`, `RandomForest`, `KNN`)
+- comparacao entre modelos classicos de classificacao
 - registro de experimentos no MLflow com parametros, metricas e versionamento do dataset
 
 ## 2. Dataset e versionamento
@@ -35,7 +35,6 @@ Executar a trilha completa da Fase 1 para previsao de churn com foco em:
 Modelos treinados:
 
 - `DummyClassifier(strategy="most_frequent")`
-- `LogisticRegression(max_iter=1000, solver="liblinear")`
 - `DecisionTreeClassifier`
 - `RandomForestClassifier`
 - `KNeighborsClassifier`
@@ -90,5 +89,5 @@ mlflow ui --backend-store-uri "sqlite:///$(pwd)/mlflow.db" --port 5000
 
 - ML Canvas preenchido com stakeholders, metricas de negocio e SLOs
 - EDA registrada com volume, qualidade, distribuicao e readiness
-- baselines Dummy + Logistic treinados e comparados
+- baselines e modelos classicos treinados e comparados
 - runs disponiveis no MLflow com parametros, metricas e dataset version

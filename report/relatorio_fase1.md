@@ -7,7 +7,7 @@ Atividades-alvo:
 1. ML Canvas com stakeholders, metricas de negocio e SLOs
 2. EDA completa com volume, qualidade, distribuicao e data readiness
 3. Metricas tecnicas (AUC-ROC, PR-AUC, F1) e metrica de negocio
-4. Baselines com DummyClassifier e Regressao Logistica
+4. Baselines com DummyClassifier e modelos classicos supervisionados
 5. Registro de experimentos no MLflow (parametros, metricas e dataset version)
 
 ## 2. Progresso das entregas
@@ -15,7 +15,7 @@ Atividades-alvo:
 - [x] ML Canvas documentado
 - [x] EDA e readiness documentados com numeros reais
 - [x] baseline DummyClassifier implementado
-- [x] baseline LogisticRegression implementado
+- [x] modelos supervisionados classicos implementados (DecisionTree, RandomForest, KNN)
 - [x] metricas tecnicas implementadas no pipeline
 - [x] metrica de negocio implementada no pipeline
 - [x] tracking no MLflow implementado
