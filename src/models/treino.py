@@ -334,6 +334,24 @@ class Treino:
         plt.show()
 
     # --------------------------------------------------
+    # Carregar modelo
+    # --------------------------------------------------
+    @staticmethod
+    def carregar_modelo(nome_modelo: str, path: str = "models/trained_models"):
+        
+        file_path = os.path.join(path, f"{nome_modelo}.joblib")
+
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Modelo nao encontrado: {file_path}")
+
+        modelo = joblib.load(file_path)
+
+        LOGGER.info("Modelo carregado de: %s", file_path)
+
+        return modelo
+
+
+    # --------------------------------------------------
     # Salvar modelo
     # --------------------------------------------------
 

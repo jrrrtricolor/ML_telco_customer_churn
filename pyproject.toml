@@ -19,6 +19,7 @@ dependencies = [
     "seaborn>=0.12",
     "jupyter>=1.0",
     "python-dotenv>=1.0",
+    "fastapi>=0.135.1"
 ]
 
 [project.optional-dependencies]
