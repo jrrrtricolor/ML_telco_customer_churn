@@ -1,0 +1,40 @@
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# Mac
+.DS_Store
+
+# Arquivos grandes / dados
+data/
+*.csv
+*.parquet
+
+# Modelos treinados
+models/
+*.pkl
+*.joblib
+
+# Secrets
+.env
+
+
+# Arquivos de banco de dados
+*.db
