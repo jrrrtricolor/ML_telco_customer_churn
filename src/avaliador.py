@@ -13,24 +13,29 @@ class Avaliador:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def _calcular_metricas(self, y_true, y_pred, y_prob):
-        resultado = {
-            "accuracy": accuracy_score(y_true, y_pred),
-            "precision": precision_score(y_true, y_pred),
-            "recall": recall_score(y_true, y_pred),
-            "f1": f1_score(y_true, y_pred),
+    def calcular_metricas(self, y_true, y_pred, y_prob):
+        """
+        Calcula métricas a partir das previsões já geradas.
+
+        Esse método permite compatibilidade com modelos sklearn e PyTorch,
+        pois não depende diretamente do modelo.
+        """
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred, zero_division=0)
+        recall = recall_score(y_true, y_pred, zero_division=0)
+        f1 = f1_score(y_true, y_pred, zero_division=0)
+
+        roc_auc = roc_auc_score(y_true, y_prob)
+        pr_auc = average_precision_score(y_true, y_prob)
+
+        return {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "roc_auc": roc_auc,
+            "pr_auc": pr_auc,
         }
-
-        if y_prob is not None:
-            # Cálculo do AUC-ROC, se as probabilidades estiverem disponíveis
-            resultado["AUC-ROC"] = roc_auc_score(y_true, y_prob)
-
-            # Cálculo do AUC-PR, se as probabilidades estiverem disponíveis
-            resultado["PR-AUC"] = average_precision_score(y_true, y_prob)
-
-        self.logger.info("Resultado das métricas: %s", resultado)
-
-        return resultado
 
     def calcular_custo_negocio(self, y_true, y_pred):
         """
@@ -68,5 +73,5 @@ class Avaliador:
         else:
             y_prob = None
 
-        return self._calcular_metricas(y_teste, y_pred, y_prob)
+        return self.calcular_metricas(y_teste, y_pred, y_prob)
 

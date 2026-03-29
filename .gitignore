@@ -35,6 +35,8 @@ models/
 # Secrets
 .env
 
+#Remover agents prompts
+agents/
 
 # Arquivos de banco de dados
 *.db
