@@ -4,6 +4,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
+from src.sklearn_pipeline import criar_pipeline_modelo
+
 
 class ModelFactory:
     def __init__(self, seed: int = 42):
@@ -12,25 +14,29 @@ class ModelFactory:
 
 
     def criar_modelo_dummy(self):
-        return DummyClassifier(strategy="most_frequent")
+        modelo = DummyClassifier(strategy="most_frequent")
+        return criar_pipeline_modelo(modelo)
 
 
     def criar_modelo_decision_tree(self):
-        return DecisionTreeClassifier(random_state=self.seed)
+        modelo = DecisionTreeClassifier(random_state=self.seed)
+        return criar_pipeline_modelo(modelo)
 
 
     def criar_modelo_random_forest(self):
-        return RandomForestClassifier(random_state=self.seed)
+        modelo = RandomForestClassifier(random_state=self.seed)
+        return criar_pipeline_modelo(modelo)
 
 
     def criar_modelo_knn(self):
-        return KNeighborsClassifier()
+        modelo = KNeighborsClassifier()
+        return criar_pipeline_modelo(modelo)
 
 
     def criar_modelos(self) -> dict:
         return {
-            "dummy": DummyClassifier(strategy="most_frequent"),
-            "decision_tree": DecisionTreeClassifier(random_state=self.seed),
-            "random_forest": RandomForestClassifier(random_state=self.seed),
-            "knn": KNeighborsClassifier()
+            "dummy": self.criar_modelo_dummy(),
+            "decision_tree": self.criar_modelo_decision_tree(),
+            "random_forest": self.criar_modelo_random_forest(),
+            "knn": self.criar_modelo_knn(),
         }
