@@ -1,8 +1,9 @@
 import logging
 import pandas as pd
 
-#Bibliotecas internas
+# Bibliotecas internas
 from src.utils import Utilidades
+
 
 class DataLoader:
     def __init__(self, data_path: str):
@@ -13,9 +14,8 @@ class DataLoader:
         self.utilidades = Utilidades()
         self._carregar_dados()
 
-
     def _carregar_dados(self) -> pd.DataFrame:
-        # Carregar os dados do arquivo usando pandas
+        # Carrega os dados do arquivo com pandas.
         try:
             if self.extensao_arquivo == "csv":
                 self.data = pd.read_csv(self.data_path)
@@ -24,12 +24,10 @@ class DataLoader:
                 raise ValueError("Extensão não suportada!")
 
         except Exception as e:
-            self.logger.error(f"Error loading data: {e}")
+            self.logger.error(f"Erro ao carregar dados: {e}")
             raise e
 
-        # Validar dados carregados.
+        # Valida os dados carregados.
         self.utilidades.validar_dados(self.data)
 
         return self.data
-
-

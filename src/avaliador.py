@@ -5,7 +5,7 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     roc_auc_score,
-    average_precision_score
+    average_precision_score,
 )
 
 
@@ -39,39 +39,42 @@ class Avaliador:
 
     def calcular_custo_negocio(self, y_true, y_pred):
         """
-            Calcula o impacto financeiro das previsões do modelo.
-            Dicionário:
-            * FP = Falso Positivo
-            * FN = Falso Negativo
-            * 100 = custo de retenção por cliente
-            * 840 = perda média por cliente que cancela
-            Regras:
-            - FP (Falso Positivo): cliente não ia sair, mas recebeu oferta → custo menor (R$ 100) -- desconto
-            - FN (Falso Negativo): cliente ia sair e não foi identificado → custo alto (R$ 840) -- Cliente perdido
+        Calcula o impacto financeiro das previsões do modelo.
 
-            Objetivo:
-            Minimizar esse custo, principalmente evitando perder clientes (FN).
-            """
+        Dicionário:
+        * FP = Falso Positivo
+        * FN = Falso Negativo
+        * 100 = custo de retenção por cliente
+        * 840 = perda média por cliente que cancela
 
-        # Clientes que não iam sair, mas o modelo disse que iam
+        Regras:
+        - FP (Falso Positivo): cliente não ia sair, mas recebeu oferta,
+          gerando custo menor (R$ 100)
+        - FN (Falso Negativo): cliente ia sair e não foi identificado,
+          gerando custo alto (R$ 840)
+
+        Objetivo:
+        Minimizar esse custo, principalmente evitando perder clientes (FN).
+        """
+
+        # Clientes que não iam sair, mas o modelo disse que iam.
         falsos_positivos = ((y_pred == 1) & (y_true == 0)).sum()
 
-        # Clientes que iam sair, mas o modelo não identificou
+        # Clientes que iam sair, mas o modelo não identificou.
         falsos_negativos = ((y_pred == 0) & (y_true == 1)).sum()
 
-        # Cálculo do custo total
+        # Cálculo do custo total.
         custo_total = (falsos_positivos * 100) + (falsos_negativos * 840)
 
         return custo_total
 
-    def avaliar(self, modelo,x_teste, y_teste):
+    def avaliar(self, modelo, x_teste, y_teste):
         y_pred = modelo.predict(x_teste)
 
-        # alguns modelos têm predict_proba
+        # Alguns modelos têm predict_proba.
         if hasattr(modelo, "predict_proba"):
             y_prob = modelo.predict_proba(x_teste)[:, 1]
         else:
             y_prob = None
 
         return self.calcular_metricas(y_teste, y_pred, y_prob)
-
