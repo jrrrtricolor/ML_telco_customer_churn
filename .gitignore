@@ -9,6 +9,8 @@ __pycache__/
 *.pyo
 *.pyd
 
+*.egg-info/
+
 # Logs
 *.log
 
@@ -23,8 +25,8 @@ __pycache__/
 .DS_Store
 
 # Arquivos grandes / dados
-data/
 *.csv
+!*.dvc
 *.parquet
 
 # Modelos treinados
