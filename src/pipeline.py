@@ -11,8 +11,6 @@ from src.data_prep import DataPreprocessor
 from src.model_factory import ModelFactory
 from src.avaliador import Avaliador
 from src.trainer import Trainer
-from src.mlp_model import MLPModel
-
 
 # Usa banco SQLite (mais estável)
 TRACKING_URI = "sqlite:///mlflow.db"
@@ -61,10 +59,6 @@ class Pipeline:
         # 2. Modelos
         # -------------------------
         modelos_a_treinar = self.modelfactory.criar_modelos()
-
-        # Adiciona MLP (PyTorch)
-        input_size = self.dataprep.X_train.shape[1]
-        modelos_a_treinar["MLP"] = MLPModel(input_size=input_size)
 
         self.logger.info("Modelos definidos (sklearn + MLP)")
 

@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
 from src.sklearn_pipeline import criar_pipeline_modelo
+from src.sklearn_mlp_model import SkLearnMLPModel
 
 
 class ModelFactory:
@@ -33,10 +34,16 @@ class ModelFactory:
         return criar_pipeline_modelo(modelo)
 
 
+    def criar_modelo_mlp(self):
+        modelo = SkLearnMLPModel()
+        return criar_pipeline_modelo(modelo)
+
+
     def criar_modelos(self) -> dict:
         return {
             "dummy": self.criar_modelo_dummy(),
             "decision_tree": self.criar_modelo_decision_tree(),
             "random_forest": self.criar_modelo_random_forest(),
             "knn": self.criar_modelo_knn(),
+            "MLP": self.criar_modelo_mlp(),
         }

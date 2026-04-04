@@ -9,7 +9,7 @@ class DataClassifier:
 
     def fit(self, X, y):
         # Copiar os dados para realizar o encoding
-        dados_encoded = X.copy()
+        dados_encoded = X
 
         # Iterar sobre as colunas do DataFrame para identificar as colunas categóricas e aplicar o encoding adequado
         for column in dados_encoded.columns:
@@ -47,7 +47,7 @@ class DataClassifier:
         # Iterar sobre as colunas do DataFrame para identificar as colunas categóricas e aplicar o encoding adequado
         for column in dados_encoded.columns:
             # Verificar se a coluna é do tipo string (categórica)
-            if self.label_encoders[column] is not None:
+            if self.label_encoders.get(column) is not None:
                 quantidade_valores_unicos = dados_encoded[column].nunique()
 
                 # Caso a feature em questão seja binária, aplicar o LabelEncoder. Caso contrário, aplicar o OneHotEncoder.
@@ -60,7 +60,7 @@ class DataClassifier:
                 else:
                     raise ValueError(f'A coluna "{column}" não é binária, mas possui um LabelEncoder associado. Verifique os encoders e os dados de entrada.')
 
-            if self.one_hot_encoders[column] is not None:
+            if self.one_hot_encoders.get(column) is not None:
                 encoder = self.one_hot_encoders[column]
 
                 encoded = encoder.transform(dados_encoded[[column]])
