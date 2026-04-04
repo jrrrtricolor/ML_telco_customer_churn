@@ -1,0 +1,5 @@
+outs:
+- md5: 4751351e6a3955ffd1604f313a14a44e
+  size: 885534
+  hash: md5
+  path: teste-2-variaveis_explicaveis.csv

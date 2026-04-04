@@ -99,58 +99,6 @@ class DataPreprocessor:
     def normalizar_dados(self) -> pd.DataFrame:
         # Tratamento de churn.
         self.dados["Churn"] = self.dados["Churn"].map({"Yes": 1, "No": 0})
-
-        # Copiar os dados para realizar o encoding
-        dados_encoded = self.dados.copy()
-
-        colunas_para_remover = []
-        dfs_encoded = []
-
-        # Instanciar o LabelEncoder para uso posterior
-        label_encoder = LabelEncoder()
-
-        # Iterar sobre as colunas do DataFrame para identificar as colunas categóricas e aplicar o encoding adequado
-        for column in dados_encoded.columns:
-            # Verificar se a coluna é do tipo string (categórica)
-            if dados_encoded[column].dtype == "object":
-                self.logger.info(dados_encoded[column].value_counts().head(10), "\n")
-
-                quantidade_valores_unicos = dados_encoded[column].nunique()
-                self.logger.info(quantidade_valores_unicos, "\n")
-
-                # Caso a feature em questão seja binária, aplicar o LabelEncoder. Caso contrário, aplicar o OneHotEncoder.
-                if quantidade_valores_unicos == 2:
-                    # binária → LabelEncoder
-                    dados_encoded[column] = label_encoder.fit_transform(
-                        dados_encoded[column]
-                    )
-
-                else:
-                    # categórica → OneHotEncoder
-                    # Ou seja, transfomar as categorias em colunas binárias.
-                    encoder = OneHotEncoder(
-                        sparse_output=False, handle_unknown="ignore"
-                    )
-
-                    encoded = encoder.fit_transform(dados_encoded[[column]])
-
-                    colunas = encoder.get_feature_names_out([column])
-
-                    df_temp = pd.DataFrame(
-                        encoded, columns=colunas, index=dados_encoded.index
-                    )
-
-                    dfs_encoded.append(df_temp)
-                    colunas_para_remover.append(column)
-
-                self.logger.info("-" * 100, "\n")
-
-        # Criando um novo pandas DataFrame concatenando os dados originais (com as colunas categóricas removidas)
-        # e os dados codificados (colunas binárias criadas a partir do OneHotEncoder).
-        self.dados = pd.concat(
-            [dados_encoded.drop(columns=colunas_para_remover)] + dfs_encoded, axis=1
-        )
-
         return self.dados
 
     def salvar_arquivo(self, pd_dataframe: pd.DataFrame):
