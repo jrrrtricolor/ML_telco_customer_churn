@@ -14,9 +14,11 @@ def criar_pipeline_modelo(modelo):
     - modelo de classificação
     """
 
-    return Pipeline([
+    pipeline = Pipeline([
         ("classifier", DataClassifier()),
         ("imputer", SimpleImputer(strategy="median")),
         ("scaler", StandardScaler()),
         ("modelo", modelo),
     ])
+
+    return pipeline

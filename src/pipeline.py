@@ -2,7 +2,6 @@ import logging
 import pandas as pd
 import mlflow
 import mlflow.sklearn
-import mlflow.pytorch
 import torch
 
 # Bibliotecas internas
@@ -123,18 +122,11 @@ class Pipeline:
                 mlflow.log_metric("custo_negocio", float(custo))
 
                 # Salvar modelo
-                if isinstance(modelo, torch.nn.Module):
-                    mlflow.pytorch.log_model(
-                        modelo,
-                        name="model",
-                        registered_model_name=f"churn_{nome.lower()}",
-                    )
-                else:
-                    mlflow.sklearn.log_model(
-                        sk_model=modelo,
-                        name="model",
-                        registered_model_name=f"churn_{nome.lower()}",
-                    )
+                mlflow.sklearn.log_model(
+                    sk_model=modelo,
+                    name="model",
+                    registered_model_name=f"churn_{nome.lower()}",
+                )
 
                 # -------------------------
                 # Resultado para tabela

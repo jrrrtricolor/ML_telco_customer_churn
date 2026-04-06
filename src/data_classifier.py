@@ -51,7 +51,8 @@ class DataClassifier:
             if self.label_encoders.get(column) is not None:
                 quantidade_valores_unicos = dados_encoded[column].nunique()
 
-                if quantidade_valores_unicos == 2:
+                # Caso a feature em questão seja binária, aplicar o LabelEncoder. Caso contrário, aplicar o OneHotEncoder.
+                if quantidade_valores_unicos <= 2:
                     label_encoder = self.label_encoders[column]
 
                     dados_encoded[column] = label_encoder.transform(
