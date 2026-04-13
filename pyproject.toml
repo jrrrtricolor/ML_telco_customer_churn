@@ -79,3 +79,6 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+markers = [
+    "e2e: testes end-to-end com Docker e API",
+]
