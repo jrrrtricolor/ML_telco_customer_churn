@@ -1,8 +1,11 @@
-import pandas as pd
+import os
+from pathlib import Path
 
-from fastapi import FastAPI
+import pandas as pd
 from enum import Enum
+from fastapi import FastAPI
 from pydantic import BaseModel
+
 import mlflow
 import mlflow.sklearn
 
@@ -15,9 +18,35 @@ mlflow.set_registry_uri(TRACKING_URI)
 model_name = "churn_mlp"
 model_version = "latest"
 
-# Load the model from the Model Registry
-model_uri = f"models:/{model_name}/{model_version}"
-model = mlflow.sklearn.load_model(model_uri)
+
+def _resolve_local_model_uri() -> str | None:
+    # Fallback simples: usa o artefato mais recente salvo localmente em mlruns.
+    candidates = sorted(
+        Path("mlruns").glob("*/models/m-*/artifacts/model.pkl"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    if not candidates:
+        return None
+    return str(candidates[0].parent)
+
+
+def _load_model():
+    model_uri = os.getenv("MODEL_URI")
+    if model_uri:
+        return mlflow.sklearn.load_model(model_uri)
+
+    registry_uri = f"models:/{model_name}/{model_version}"
+    try:
+        return mlflow.sklearn.load_model(registry_uri)
+    except Exception:
+        local_uri = _resolve_local_model_uri()
+        if local_uri is None:
+            raise
+        return mlflow.sklearn.load_model(local_uri)
+
+
+model = _load_model()
 
 app = FastAPI()
 

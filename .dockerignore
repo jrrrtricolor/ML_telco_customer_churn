@@ -1,0 +1,38 @@
+# Git e metadados locais
+.git
+.gitignore
+.gitattributes
+
+# IDE/editor
+.idea/
+.vscode/
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Cache Python e testes
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Artefatos de build
+build/
+dist/
+*.egg-info/
+
+# Arquivos do sistema
+.DS_Store
+
+# Arquivos locais opcionais
+*.log
+.ipynb_checkpoints/
+
+# Dados e artefatos que nao precisam ir para a imagem de runtime
+notebooks/
+tests/
+docs/
+
