@@ -1,5 +1,4 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
@@ -8,9 +7,9 @@ class DataClassifier:
         self.one_hot_encoders = {}
         self.label_encoders = {}
 
-    def fit(self, X, y):
+    def fit(self, x, y):
         # Copia os dados para realizar o encoding.
-        dados_encoded = X
+        dados_encoded = x
 
         # Itera sobre as colunas para identificar variáveis categóricas
         # e aplicar o encoding adequado.
@@ -37,9 +36,9 @@ class DataClassifier:
 
         return self
 
-    def transform(self, X):
+    def transform(self, x):
         # Copia os dados para realizar o encoding.
-        dados_encoded = X.copy()
+        dados_encoded = x.copy()
 
         colunas_para_remover = []
         dfs_encoded = []

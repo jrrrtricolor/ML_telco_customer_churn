@@ -1,11 +1,12 @@
 import logging
+
 from sklearn.dummy import DummyClassifier
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 
-from src.sklearn_pipeline import criar_pipeline_modelo
 from src.sklearn_mlp_model import SkLearnMLPModel
+from src.sklearn_pipeline import criar_pipeline_modelo
 
 
 class ModelFactory:

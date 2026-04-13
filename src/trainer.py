@@ -1,5 +1,4 @@
 import logging
-from typing import Dict
 
 
 class Trainer:
@@ -16,20 +15,20 @@ class Trainer:
 
     def treinar_modelos(
         self,
-        modelos: Dict[str, object],
-        X_train,
+        modelos: dict[str, object],
+        x_train,
         y_train,
-    ) -> Dict[str, object]:
+    ) -> dict[str, object]:
         """
         Treina múltiplos modelos.
 
         Args:
-            modelos: dicionário com nome e instância dos modelos
-            X_train: dados de treino (features)
-            y_train: rótulos de treino
+            modelos: dicionário com nome e instância dos modelos.
+            x_train: dados de treino (features).
+            y_train: rótulos de treino.
 
         Returns:
-            dicionário com modelos treinados
+            dicionário com modelos treinados.
         """
 
         modelos_treinados = {}
@@ -37,13 +36,13 @@ class Trainer:
         for nome, modelo in modelos.items():
             self.logger.info(f"Iniciando treino do modelo: {nome}")
 
-            modelo_treinado = self._treinar_modelo(modelo, X_train, y_train)
+            modelo_treinado = self._treinar_modelo(modelo, x_train, y_train)
 
             modelos_treinados[nome] = modelo_treinado
 
         return modelos_treinados
 
-    def _treinar_modelo(self, modelo, X_train, y_train):
+    def _treinar_modelo(self, modelo, x_train, y_train):
         """
         Treina um único modelo.
 
@@ -51,7 +50,7 @@ class Trainer:
         """
 
         try:
-            modelo = modelo.fit(X_train, y_train)
+            modelo = modelo.fit(x_train, y_train)
 
             self.logger.info("Modelo treinado com sucesso.")
 
@@ -61,23 +60,22 @@ class Trainer:
 
         return modelo
 
-    def predict(self, modelo, X_test):
+    def predict(self, modelo, x_test):
         """
         Gera previsões (0 ou 1).
 
         Funciona para sklearn e PyTorch.
         """
-        
-        return modelo.predict(X_test)
+        return modelo.predict(x_test)
 
-    def predict_proba(self, modelo, X_test):
+    def predict_proba(self, modelo, x_test):
         """
         Retorna probabilidades (necessário para AUC).
 
         Funciona para sklearn e PyTorch.
         """
 
-        probs = modelo.predict_proba(X_test)
+        probs = modelo.predict_proba(x_test)
 
         self.logger.info(f"Probabilidades geradas para o modelo: {probs}")
 

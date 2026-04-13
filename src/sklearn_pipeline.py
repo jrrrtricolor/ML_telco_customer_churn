@@ -1,8 +1,9 @@
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
 
-from src.data_classifier import DataClassifier 
+from src.data_classifier import DataClassifier
+
 
 def criar_pipeline_modelo(modelo):
     """
