@@ -1,19 +1,21 @@
 import logging
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
-
 from sklearn.base import BaseEstimator
+
 from src.mlp_model import MLPModel
+
 
 class SkLearnMLPModel(BaseEstimator):
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger(__name__)
 
-    def fit(self, X, y):
-        input_size = X.shape[1]
+    def fit(self, x, y):
+        input_size = x.shape[1]
         hidden_size = 32
 
         # Camada que conecta entrada → camada oculta
@@ -29,7 +31,7 @@ class SkLearnMLPModel(BaseEstimator):
         self.model_module.train()
 
         # Converte DataFrame → numpy → tensor
-        X_train = torch.tensor(X, dtype=torch.float32)
+        x_train = torch.tensor(x, dtype=torch.float32)
         y_train = torch.tensor(y, dtype=torch.float32).view(-1, 1)
 
         # Função de perda (binário)
@@ -44,7 +46,7 @@ class SkLearnMLPModel(BaseEstimator):
             optimizer.zero_grad()
 
             # Forward pass
-            outputs = self.model_module(X_train)
+            outputs = self.model_module(x_train)
 
             # Calcula erro
             loss = criterion(outputs, y_train)
@@ -67,28 +69,28 @@ class SkLearnMLPModel(BaseEstimator):
 
         return self
 
-    def transform(self, X):
-        return X
+    def transform(self, x):
+        return x
 
-    def predict(self, X):
+    def predict(self, x):
         self.model_module.eval()
 
-        X_test = torch.tensor(X, dtype=torch.float32)
+        x_test = torch.tensor(x, dtype=torch.float32)
 
         with torch.no_grad():
-            outputs = self.model_module(X_test)
+            outputs = self.model_module(x_test)
             probs = torch.sigmoid(outputs)
             preds = (probs > 0.5).int()
 
         return preds.numpy().flatten()
 
-    def predict_proba(self, X):
+    def predict_proba(self, x):
         self.model_module.eval()
 
-        X_test = torch.tensor(X, dtype=torch.float32)
+        x_test = torch.tensor(x, dtype=torch.float32)
 
         with torch.no_grad():
-            outputs = self.model_module(X_test)
+            outputs = self.model_module(x_test)
             probs = torch.sigmoid(outputs)
 
         value = probs.numpy().flatten()

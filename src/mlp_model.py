@@ -1,6 +1,8 @@
 import logging
+
 import torch
 import torch.nn as nn
+
 
 class MLPModel(nn.Module):
     """

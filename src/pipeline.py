@@ -1,14 +1,15 @@
 import logging
-import pandas as pd
+
 import mlflow
 import mlflow.sklearn
-import torch
+import pandas as pd
+
+from src.avaliador import Avaliador
+from src.data_prep import DataPreprocessor
 
 # Bibliotecas internas
 from src.load import DataLoader
-from src.data_prep import DataPreprocessor
 from src.model_factory import ModelFactory
-from src.avaliador import Avaliador
 from src.trainer import Trainer
 
 # Usa banco SQLite (mais estável)
@@ -26,7 +27,7 @@ class Pipeline:
             data_path="data/raw/Telco_Customer_Churn.csv"
         )
 
-        self.dataprep = DataPreprocessor(
+        self.data_prep = DataPreprocessor(
             pd_dataframe=self.data_loader.data,
             seed=2711,
             test_size=0.2,
@@ -34,7 +35,7 @@ class Pipeline:
 
         self.avaliador = Avaliador()
         self.treinador = Trainer()
-        self.modelfactory = ModelFactory(seed=2711)
+        self.model_factory = ModelFactory(seed=2711)
 
     def executar(self):
         """
@@ -51,13 +52,13 @@ class Pipeline:
         # -------------------------
         # 1. Preparação dos dados
         # -------------------------
-        self.dataprep.preparar()
+        self.data_prep.preparar()
         self.logger.info("Dados preparados com sucesso")
 
         # -------------------------
         # 2. Modelos
         # -------------------------
-        modelos_a_treinar = self.modelfactory.criar_modelos()
+        modelos_a_treinar = self.model_factory.criar_modelos()
 
         self.logger.info("Modelos definidos (sklearn + MLP)")
 
@@ -66,8 +67,8 @@ class Pipeline:
         # -------------------------
         modelos_treinados = self.treinador.treinar_modelos(
             modelos_a_treinar,
-            self.dataprep.X_train,
-            self.dataprep.y_train,
+            self.data_prep.X_train,
+            self.data_prep.y_train,
         )
 
         self.logger.info("Treinamento concluído")
@@ -88,24 +89,24 @@ class Pipeline:
                 # Previsões (compatível sklearn + PyTorch)
                 # -------------------------
                 y_pred = self.treinador.predict(
-                    modelo, self.dataprep.X_test
+                    modelo, self.data_prep.X_test
                 )
 
                 y_prob = self.treinador.predict_proba(
-                    modelo, self.dataprep.X_test
+                    modelo, self.data_prep.X_test
                 )
 
                 # -------------------------
                 # Métricas
                 # -------------------------
                 resultado = self.avaliador.calcular_metricas(
-                    self.dataprep.y_test,
+                    self.data_prep.y_test,
                     y_pred,
                     y_prob,
                 )
 
                 custo = self.avaliador.calcular_custo_negocio(
-                    self.dataprep.y_test,
+                    self.data_prep.y_test,
                     y_pred,
                 )
 
@@ -154,3 +155,4 @@ class Pipeline:
         self.logger.info("Tabela final gerada com sucesso")
 
         return df_resultados
+

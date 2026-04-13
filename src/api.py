@@ -1,22 +1,20 @@
 import os
-from pathlib import Path
-
-import pandas as pd
 from enum import Enum
-from fastapi import FastAPI
-from pydantic import BaseModel
+from pathlib import Path
 
 import mlflow
 import mlflow.sklearn
+import pandas as pd
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 # Usa banco SQLite (mais estável)
 TRACKING_URI = "sqlite:///mlflow.db"
+MODEL_NAME = "churn_mlp"
+MODEL_VERSION = "latest"
 
 mlflow.set_tracking_uri(TRACKING_URI)
 mlflow.set_registry_uri(TRACKING_URI)
-
-model_name = "churn_mlp"
-model_version = "latest"
 
 
 def _resolve_local_model_uri() -> str | None:
@@ -31,12 +29,12 @@ def _resolve_local_model_uri() -> str | None:
     return str(candidates[0].parent)
 
 
-def _load_model():
+def _load_model() -> object:
     model_uri = os.getenv("MODEL_URI")
     if model_uri:
         return mlflow.sklearn.load_model(model_uri)
 
-    registry_uri = f"models:/{model_name}/{model_version}"
+    registry_uri = f"models:/{MODEL_NAME}/{MODEL_VERSION}"
     try:
         return mlflow.sklearn.load_model(registry_uri)
     except Exception:
@@ -49,6 +47,7 @@ def _load_model():
 model = _load_model()
 
 app = FastAPI()
+
 
 class GenderEnum(str, Enum):
     female = "Female"
@@ -63,6 +62,7 @@ class YesNoEnum(str, Enum):
 class PhoneServiceEnum(str, Enum):
     yes = "Yes"
     no = "No"
+
 
 class MultipleLinesEnum(str, Enum):
     no = "No"
@@ -94,6 +94,7 @@ class PaymentMethodEnum(str, Enum):
     bank_transfer_automatic = "Bank transfer (automatic)"
     credit_card_automatic = "Credit card (automatic)"
 
+
 class PredictionRequest(BaseModel):
     gender: GenderEnum
     SeniorCitizen: int
@@ -115,7 +116,7 @@ class PredictionRequest(BaseModel):
     MonthlyCharges: float
     TotalCharges: float
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, object]:
         return {
             "gender": self.gender.value,
             "SeniorCitizen": self.SeniorCitizen,
@@ -138,18 +139,19 @@ class PredictionRequest(BaseModel):
             "TotalCharges": self.TotalCharges,
         }
 
+
 class PredictionResponse(BaseModel):
     prediction: bool
 
+
 @app.get("/health")
-def read_health():
+def read_health() -> dict[str, str]:
     return {"status": "ok"}
+
 
 @app.post("/predict")
 def read_predict(prediction_request: PredictionRequest) -> PredictionResponse:
-    global model
-
     data_dict = prediction_request.to_dict()
-    data = pd.DataFrame([list(data_dict.values())], columns=data_dict.keys())
+    data = pd.DataFrame([list(data_dict.values())], columns=list(data_dict.keys()))
     prediction = model.predict(data)
     return PredictionResponse(prediction=bool(prediction[0]))
