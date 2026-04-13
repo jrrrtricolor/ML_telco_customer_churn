@@ -42,3 +42,4 @@ agents/
 
 # Arquivos de banco de dados
 *.db
+/docs/Requisitos/
