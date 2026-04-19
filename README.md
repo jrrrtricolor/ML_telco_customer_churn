@@ -1,36 +1,36 @@
 # ML Telco Customer Churn
 
-Projeto de Machine Learning para previsao de churn (cancelamento) de clientes de telecom.
+Projeto de Machine Learning para previsão de churn (cancelamento) de clientes de telecom.
 
-Este repositorio foi estruturado para o Tech Challenge (FIAP), com pipeline de dados, treinamento de modelos baseline (Scikit-Learn), MLP com PyTorch, rastreamento no MLflow e API com FastAPI.
+Este repositório foi estruturado para o Tech Challenge (FIAP), com pipeline de dados, treinamento de modelos baseline (Scikit-Learn), MLP com PyTorch, rastreamento no MLflow e API com FastAPI.
 
-## Nivel atual do projeto
+## Nível atual do projeto
 
-- Estagio: **iniciante para intermediario**.
+- Estágio: **iniciante para intermediário**.
 - O fluxo principal de treino roda localmente.
-- A suite de testes roda localmente quando `PYTHONPATH=.` e usado.
-- Ainda ha melhorias importantes para nivel de producao (documentadas na secao de backlog).
+- A suíte de testes roda localmente quando `PYTHONPATH=.` é usado.
+- Ainda há melhorias importantes para nível de produção (documentadas na seção de backlog).
 
-## Arquitetura (visao geral)
+## Arquitetura (visão geral)
 
-- `src/load.py`: carga e validacao inicial dos dados.
-- `src/data_prep.py`: limpeza, conversao de colunas e split treino/teste.
-- `src/sklearn_pipeline.py` + `src/data_classifier.py`: pre-processamento e pipeline sklearn.
-- `src/model_factory.py`: fabrica de modelos baseline + MLP.
-- `src/sklearn_mlp_model.py` + `src/mlp_model.py`: implementacao de MLP em PyTorch com interface sklearn.
-- `src/trainer.py`: treino e inferencia dos modelos.
-- `src/avaliador.py`: metricas tecnicas e custo de negocio.
-- `src/pipeline.py`: orquestracao fim a fim + logs no MLflow.
+- `src/load.py`: carga e validação inicial dos dados.
+- `src/data_prep.py`: limpeza, conversão de colunas e split treino/teste.
+- `src/sklearn_pipeline.py` + `src/data_classifier.py`: pré-processamento e pipeline sklearn.
+- `src/model_factory.py`: fábrica de modelos baseline + MLP.
+- `src/sklearn_mlp_model.py` + `src/mlp_model.py`: implementação de MLP em PyTorch com interface sklearn.
+- `src/trainer.py`: treino e inferência dos modelos.
+- `src/avaliador.py`: métricas técnicas e custo de negócio.
+- `src/pipeline.py`: orquestração fim a fim + logs no MLflow.
 - `src/api.py`: API FastAPI (`/health`, `/predict`).
-- `tests/`: testes unitarios.
+- `tests/`: testes unitários.
 
 ## Requisitos
 
 - Python 3.11+
 - Ambiente virtual (recomendado)
-- Dependencias do projeto
+- Dependências do projeto
 
-## Setup rapido
+## Setup rápido
 
 ```bash
 python3 -m venv .venv
@@ -41,7 +41,7 @@ pip install -r requirement.txt
 
 ## Como executar
 
-### 1) Rodar pipeline de treino e avaliacao
+### 1) Rodar pipeline de treino e avaliação
 
 ```bash
 PYTHONPATH=. python -m src.main
@@ -49,8 +49,8 @@ PYTHONPATH=. python -m src.main
 
 Resultado esperado:
 - treino dos modelos
-- log de metricas
-- registro de execucoes e modelos no MLflow local (`mlflow.db`)
+- log de métricas
+- registro de execuções e modelos no MLflow local (`mlflow.db`)
 
 ### 2) Rodar testes
 
@@ -58,13 +58,11 @@ Resultado esperado:
 PYTHONPATH=. pytest -q
 ```
 
-### 3) Verificar lint (qualidade de codigo)
+### 3) Verificar lint (qualidade de código)
 
 ```bash
 ruff check src tests
 ```
-
-> Observacao: neste momento, o lint ainda aponta pendencias que fazem parte do backlog tecnico.
 
 ### 4) Subir API local
 
@@ -72,13 +70,13 @@ ruff check src tests
 PYTHONPATH=. uvicorn src.api:app --host 127.0.0.1 --port 8000
 ```
 
-Teste rapido:
+Teste rápido:
 
 ```bash
 curl http://127.0.0.1:8000/health
 ```
 
-### 5) Exemplo de inferencia (`/predict`)
+### 5) Exemplo de inferência (`/predict`)
 
 ```bash
 curl -X POST http://127.0.0.1:8000/predict \
@@ -117,11 +115,11 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5001
 Depois, abra no navegador:
 - `http://127.0.0.1:5001`
 
-## Documentacao
+## Documentação
 
 - Model Card (formato Google adaptado): `docs/model_card.md`
 - ML Canvas: `docs/0- ml_canvas_fase1.md`
-- Definicao de metricas: `docs/1- definicao_metricas.md`
+- Definição de métricas: `docs/1- definicao_metricas.md`
 
 ## Estrutura do projeto
 
@@ -142,17 +140,14 @@ requirement.txt
 - Porta em uso na API:
   - altere `--port` no comando do uvicorn.
 - Ambiente inconsistente:
-  - recrie o virtualenv e reinstale dependencias.
+  - recrie o virtualenv e reinstale dependências.
 
-## Backlog tecnico prioritario
+## Backlog técnico prioritário
 
-1. Corrigir todos os erros de lint do `ruff`.
-2. Remover necessidade de `PYTHONPATH=.` com empacotamento/instalacao correta do modulo `src`.
-3. Incluir baseline de Regressao Logistica para comparacao formal.
-4. Evoluir treinamento MLP com validacao, batching e early stopping.
-5. Expandir testes (API, schema e smoke test).
-6. Evoluir o Model Card com analises por segmento (fairness) e historico de versoes.
+1. Remover necessidade de `PYTHONPATH=.` com empacotamento/instalação correta do módulo `src`.
+2. Expandir testes (API, schema e smoke test).
+3. Evoluir o Model Card com análises por segmento (fairness) e histórico de versões.
 
-## Licenca
+## Licença
 
 MIT

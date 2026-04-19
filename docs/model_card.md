@@ -53,7 +53,7 @@ Métrica de negócio:
 ## 5. Evaluation Data (Dados de Avaliação)
 
 - Dataset: `data/raw/Telco_Customer_Churn.csv`
-- Estratégia atual: divisão treino/teste (sem validação cruzada no fluxo principal)
+- Estratégia atual: divisão treino/teste + validação cruzada estratificada no treino
 - Unidade de análise: 1 linha por cliente
 - Target: `Churn` mapeado de `Yes/No` para `1/0`
 
@@ -66,6 +66,7 @@ Métrica de negócio:
 | Dummy | 0.7197 | 0.0000 | 0.0000 | 0.0000 | 0.5000 | 0.2803 | 331800 |
 | KNN | 0.7701 | 0.6060 | 0.5139 | 0.5562 | 0.8048 | 0.5603 | 174480 |
 | Random Forest | 0.7842 | 0.6502 | 0.4987 | 0.5645 | 0.8264 | 0.6385 | 176920 |
+| Logistic Regression | a atualizar | a atualizar | a atualizar | a atualizar | a atualizar | a atualizar | a atualizar |
 
 Leitura rápida:
 
@@ -85,9 +86,9 @@ Pré-processamento aplicado no estado atual:
 
 Limitações conhecidas de treinamento:
 
-- Sem validação cruzada estratificada no fluxo principal.
-- Sem baseline de Regressão Logística (pendente).
-- MLP sem early stopping e sem batching nesta versão.
+- A validação cruzada estratificada já está no fluxo principal, mas ainda sem busca de hiperparâmetros.
+- A baseline de Regressão Logística foi adicionada para comparação formal.
+- MLP com validação, mini-batch e early stopping em versão inicial.
 
 ## 7. Ethical Considerations (Considerações Éticas)
 
@@ -114,12 +115,10 @@ Boas práticas recomendadas:
 
 ### 8.2 Recommendations (Próximos Passos)
 
-1. Adicionar baseline com `LogisticRegression` para comparação obrigatória.
-2. Implementar validação cruzada estratificada + conjunto de validação.
-3. Evoluir o MLP com mini-batch e early stopping.
-4. Adicionar testes de schema (`pandera`) e testes de API/smoke.
-5. Corrigir pendências de lint e padronizar naming/type hints.
-6. Definir monitoramento contínuo (drift, performance e custo de negócio).
+1. Evoluir tuning de hiperparâmetros (baseline e MLP).
+2. Adicionar testes de schema (`pandera`) e testes de API/smoke.
+3. Corrigir pendências de lint e padronizar naming/type hints.
+4. Definir monitoramento contínuo (drift, performance e custo de negócio).
 
 ## 9. Como Citar este Model Card
 
