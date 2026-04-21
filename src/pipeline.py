@@ -3,7 +3,6 @@ import logging
 import mlflow
 import mlflow.sklearn
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold, cross_validate
 
 from src.avaliador import Avaliador
 from src.data_prep import DataPreprocessor
@@ -37,35 +36,6 @@ class Pipeline:
         self.avaliador = Avaliador()
         self.treinador = Trainer()
         self.model_factory = ModelFactory(seed=2711)
-
-        self.cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=2711)
-
-    def _calcular_metricas_cv(self, modelo, x_treino, y_treino) -> dict[str, float]:
-        # Validação cruzada estratificada para medir estabilidade do modelo.
-        scoring = {
-            "cv_roc_auc": "roc_auc",
-            "cv_pr_auc": "average_precision",
-            "cv_f1": "f1",
-            "cv_precision": "precision",
-            "cv_recall": "recall",
-        }
-
-        resultados_cv = cross_validate(
-            estimator=modelo,
-            X=x_treino,
-            y=y_treino,
-            cv=self.cv,
-            scoring=scoring,
-            n_jobs=1,
-        )
-
-        metricas_medias = {}
-        for nome_metrica in scoring:
-            metricas_medias[nome_metrica] = float(
-                resultados_cv[f"test_{nome_metrica}"].mean()
-            )
-
-        return metricas_medias
 
     def executar(self):
         """
@@ -114,14 +84,6 @@ class Pipeline:
             self.logger.info(f"Avaliando modelo: {nome}")
 
             with mlflow.start_run(run_name=nome):
-                # -------------------------
-                # Validação cruzada estratificada
-                # -------------------------
-                metricas_cv = self._calcular_metricas_cv(
-                    modelos_a_treinar[nome],
-                    self.data_prep.X_train,
-                    self.data_prep.y_train,
-                )
 
                 # -------------------------
                 # Previsões (compatível sklearn + PyTorch)
@@ -158,9 +120,6 @@ class Pipeline:
                     if isinstance(v, (int, float)):
                         mlflow.log_metric(k, float(v))
 
-                for k, v in metricas_cv.items():
-                    mlflow.log_metric(k, float(v))
-
                 mlflow.log_metric("custo_negocio", float(custo))
 
                 # Salvar modelo
@@ -177,7 +136,6 @@ class Pipeline:
                     {
                         "modelo": nome,
                         **resultado,
-                        **metricas_cv,
                         "custo_negocio": custo,
                     }
                 )
