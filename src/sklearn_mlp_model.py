@@ -4,14 +4,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 
 from src.mlp_model import MLPModel
 
 
-class SkLearnMLPModel(BaseEstimator):
+class SkLearnMLPModel(ClassifierMixin, BaseEstimator):
     def __init__(
         self,
         hidden_size: int = 32,
@@ -116,6 +116,10 @@ class SkLearnMLPModel(BaseEstimator):
 
         if melhor_estado is not None:
             self.model_module.load_state_dict(melhor_estado)
+
+        self.classes_ = np.array([0, 1])
+        self.n_features_in_ = x_array.shape[1]
+        self._estimator_type = "classifier"
 
         self.model_module.eval()
         self.logger.info("Treinamento PyTorch finalizado")
