@@ -1,0 +1,27 @@
+groups:
+  - name: ml_telco_customer_churn
+    rules:
+      - alert: HighErrorRate
+        expr: api_errors_total > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "The API has encountered more than 5 errors in the last 5 minutes."
+      - alert: HighPredictionDuration
+        expr: prediction_duration_seconds > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High prediction duration detected"
+          description: "The duration of prediction processing has exceeded 1 second for the last 5 minutes."
+      - alert: LowAverageConfidence
+        expr: average_prediction_confidence < 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low average prediction confidence detected"
+          description: "The average confidence of predictions has dropped below 0.5 for the last 5 minutes."

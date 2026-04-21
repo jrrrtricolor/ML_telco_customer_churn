@@ -1,12 +1,21 @@
 import os
 from enum import Enum
 from pathlib import Path
+import time
 
 import mlflow
 import mlflow.sklearn
 import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel
+
+from prometheus_fastapi_instrumentator import Instrumentator
+
+from src.config.logging_config import setup_api_logger
+from src.config.api_logging_middleware import LoggingMiddleware
+from src.metrics import (AVG_CONFIDENCE, PREDICTIONS_TOTAL, PREDICTION_DURATION)
+
+LOGGER = setup_api_logger()
 
 # Usa banco SQLite (mais estável)
 TRACKING_URI = "sqlite:///mlflow.db"
@@ -47,7 +56,8 @@ def _load_model() -> object:
 model = _load_model()
 
 app = FastAPI()
-
+app.add_middleware(LoggingMiddleware)
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 class GenderEnum(str, Enum):
     female = "Female"
@@ -153,5 +163,18 @@ def read_health() -> dict[str, str]:
 def read_predict(prediction_request: PredictionRequest) -> PredictionResponse:
     data_dict = prediction_request.to_dict()
     data = pd.DataFrame([list(data_dict.values())], columns=list(data_dict.keys()))
+
+    start_time = time.perf_counter()
+
     prediction = model.predict(data)
+    prediction_proba = model.predict_proba(data)[:, 1]
+
+    duration = time.perf_counter() - start_time
+
+    LOGGER.info("prediction_made", extra={"duration": duration, "confidence": prediction_proba[0], "input_data": data_dict, "prediction": bool(prediction[0])})
+
+    PREDICTION_DURATION.observe(duration)
+    PREDICTIONS_TOTAL.inc()
+    AVG_CONFIDENCE.observe(prediction_proba[0])
+    
     return PredictionResponse(prediction=bool(prediction[0]))
