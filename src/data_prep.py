@@ -30,7 +30,7 @@ class DataPreprocessor:
         # Importar classes de utilidades
         self.utilidades = Utilidades
 
-    def converter_features_numericas(self, feature_names: dict):
+    def converter_features_numericas(self, feature_names: list[str]):
         # Converter as features numéricas para o tipo float
         for feature_name in feature_names:
             try:
@@ -55,11 +55,15 @@ class DataPreprocessor:
             raise e
 
     def dividir_treino_teste(self):
-        # Dividir os dados em treino e teste
+        # Dividir os dados em treino e teste mantendo a proporção da classe alvo.
 
         try:
             self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-                self.X, self.y, test_size=self.TEST_SIZE, random_state=self.SEED
+                self.X,
+                self.y,
+                test_size=self.TEST_SIZE,
+                random_state=self.SEED,
+                stratify=self.y,
             )
         except Exception as e:
             self.logger.error(
