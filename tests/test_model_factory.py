@@ -13,6 +13,7 @@ def test_model_factory_retorna_modelos_esperados():
         "decision_tree",
         "random_forest",
         "knn",
+        "logistic_regression",
         "MLP",
     }
 

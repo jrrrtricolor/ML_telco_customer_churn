@@ -2,6 +2,7 @@ import logging
 
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 
@@ -35,8 +36,13 @@ class ModelFactory:
         return criar_pipeline_modelo(modelo)
 
 
+    def criar_modelo_logistic_regression(self):
+        modelo = LogisticRegression(random_state=self.seed, max_iter=1000)
+        return criar_pipeline_modelo(modelo)
+
+
     def criar_modelo_mlp(self):
-        modelo = SkLearnMLPModel()
+        modelo = SkLearnMLPModel(random_state=self.seed)
         return criar_pipeline_modelo(modelo)
 
 
@@ -46,5 +52,6 @@ class ModelFactory:
             "decision_tree": self.criar_modelo_decision_tree(),
             "random_forest": self.criar_modelo_random_forest(),
             "knn": self.criar_modelo_knn(),
+            "logistic_regression": self.criar_modelo_logistic_regression(),
             "MLP": self.criar_modelo_mlp(),
         }
