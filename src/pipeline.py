@@ -1,4 +1,5 @@
 import logging
+import math
 
 import mlflow
 import mlflow.sklearn
@@ -39,6 +40,10 @@ class Pipeline:
         self.model_factory = ModelFactory(seed=2711)
 
         self.cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=2711)
+
+    @staticmethod
+    def _valor_numerico_valido(valor: object) -> bool:
+        return isinstance(valor, (int, float)) and math.isfinite(float(valor))
 
     def _calcular_metricas_cv(self, modelo, x_treino, y_treino) -> dict[str, float]:
         scoring = {
@@ -151,11 +156,18 @@ class Pipeline:
                 mlflow.log_param("dataset", "dados_limpos")
 
                 for k, v in resultado.items():
-                    if isinstance(v, (int, float)):
+                    if self._valor_numerico_valido(v):
                         mlflow.log_metric(k, float(v))
 
                 for k, v in metricas_cv.items():
-                    mlflow.log_metric(k, float(v))
+                    if self._valor_numerico_valido(v):
+                        mlflow.log_metric(k, float(v))
+                    else:
+                        self.logger.warning(
+                            "Métrica de CV ignorada por valor inválido: %s=%s",
+                            k,
+                            v,
+                        )
 
                 mlflow.log_metric("custo_negocio", float(custo))
 
@@ -173,7 +185,7 @@ class Pipeline:
                     {
                         "modelo": nome,
                         **resultado,
-                        **metricas_cv,
+                        **{k: v for k, v in metricas_cv.items() if self._valor_numerico_valido(v)},
                         "custo_negocio": custo,
                     }
                 )
