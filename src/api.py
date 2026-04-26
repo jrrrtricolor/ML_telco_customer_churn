@@ -7,14 +7,18 @@ from pathlib import Path
 import mlflow
 import mlflow.sklearn
 import pandas as pd
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, Field
 
-from src.config.logging_config import setup_logging
+from src.config.api_logging_middleware import LoggingMiddleware
+from src.config.logging_config import setup_api_logger, setup_logging
+from src.metrics import AVG_CONFIDENCE, PREDICTION_DURATION, PREDICTIONS_TOTAL
 
 setup_logging()
 
 logger = logging.getLogger(__name__)
+LOGGER = setup_api_logger()
 
 # Usa banco SQLite (mais estável)
 TRACKING_URI = "sqlite:///mlflow.db"
@@ -68,23 +72,8 @@ def _get_model() -> object:
 
 
 app = FastAPI()
-
-
-@app.middleware("http")
-async def log_latency(request: Request, call_next):
-    started_at = time.perf_counter()
-    response = await call_next(request)
-    latency_ms = (time.perf_counter() - started_at) * 1000
-
-    logger.info(
-        "request method=%s path=%s status_code=%s latency_ms=%.2f",
-        request.method,
-        request.url.path,
-        response.status_code,
-        latency_ms,
-    )
-
-    return response
+app.add_middleware(LoggingMiddleware)
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 
 class GenderEnum(str, Enum):
@@ -192,5 +181,30 @@ def read_predict(prediction_request: PredictionRequest) -> PredictionResponse:
     data_dict = prediction_request.to_dict()
     data = pd.DataFrame([list(data_dict.values())], columns=list(data_dict.keys()))
     model = _get_model()
+
+    start_time = time.perf_counter()
     prediction = model.predict(data)
+
+    prediction_proba = None
+    if hasattr(model, "predict_proba"):
+        prediction_proba = model.predict_proba(data)[:, 1]
+
+    duration = time.perf_counter() - start_time
+
+    confidence = float(prediction_proba[0]) if prediction_proba is not None else None
+    LOGGER.info(
+        "prediction_made",
+        extra={
+            "duration": duration,
+            "confidence": confidence,
+            "input_data": data_dict,
+            "prediction": bool(prediction[0]),
+        },
+    )
+
+    PREDICTION_DURATION.observe(duration)
+    PREDICTIONS_TOTAL.inc()
+    if confidence is not None:
+        AVG_CONFIDENCE.observe(confidence)
+
     return PredictionResponse(prediction=bool(prediction[0]))

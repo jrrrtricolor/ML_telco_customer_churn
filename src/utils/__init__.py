@@ -1,0 +1,22 @@
+import logging
+
+import pandas as pd
+
+
+class Utilidades:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+
+    def validar_dados(self, pd_dataframe: pd.DataFrame):
+        # Mantém compatibilidade com os módulos antigos que importam src.utils.
+        if pd_dataframe is None:
+            message = "Nenhum dado carregado para validar."
+            self.logger.error(message)
+            raise ValueError(message)
+
+        if pd_dataframe.empty:
+            message = "O arquivo de dados está vazio."
+            self.logger.error(message)
+            raise ValueError(message)
+
+        self.logger.info("Dados validados com sucesso.")

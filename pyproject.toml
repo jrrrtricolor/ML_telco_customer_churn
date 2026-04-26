@@ -25,6 +25,9 @@ dependencies = [
     "dvc-s3>=3.3.0",
     "pandera>=0.24",
     "pydantic>=2.12.5",
+    "python-json-logger>=4.0.0",
+    "prometheus-client>=0.24.1",
+    "prometheus-fastapi-instrumentator>=7.1.0",
 ]
 
 [project.optional-dependencies]
