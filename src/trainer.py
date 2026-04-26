@@ -77,6 +77,10 @@ class Trainer:
 
         probs = modelo.predict_proba(x_test)
 
-        self.logger.info(f"Probabilidades geradas para o modelo: {probs}")
+        # Evita despejar a matriz inteira no log durante treino e testes.
+        self.logger.info(
+            "Probabilidades geradas com sucesso | linhas=%s",
+            len(probs),
+        )
 
         return probs[:, 1]
