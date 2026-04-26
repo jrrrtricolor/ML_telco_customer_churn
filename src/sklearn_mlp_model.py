@@ -109,9 +109,7 @@ class SkLearnMLPModel(ClassifierMixin, BaseEstimator):
                 )
 
             if paciencia_atual >= self.patience:
-                self.logger.info(
-                    "Early stopping ativado na epoch %s.", epoch + 1
-                )
+                self.logger.info("Early stopping ativado na epoch %s.", epoch + 1)
                 break
 
         if melhor_estado is not None:

@@ -30,4 +30,3 @@ def test_calcular_custo_negocio_computa_fp_fn():
 
     # 1 FP (100) + 1 FN (840) = 940
     assert custo == 940
-

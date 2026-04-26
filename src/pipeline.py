@@ -25,9 +25,7 @@ class Pipeline:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-        self.data_loader = DataLoader(
-            data_path="data/raw/Telco_Customer_Churn.csv"
-        )
+        self.data_loader = DataLoader(data_path="data/raw/Telco_Customer_Churn.csv")
 
         self.data_prep = DataPreprocessor(
             pd_dataframe=self.data_loader.data,
@@ -127,13 +125,9 @@ class Pipeline:
                 # -------------------------
                 # Previsões (compatível sklearn + PyTorch)
                 # -------------------------
-                y_pred = self.treinador.predict(
-                    modelo, self.data_prep.X_test
-                )
+                y_pred = self.treinador.predict(modelo, self.data_prep.X_test)
 
-                y_prob = self.treinador.predict_proba(
-                    modelo, self.data_prep.X_test
-                )
+                y_prob = self.treinador.predict_proba(modelo, self.data_prep.X_test)
 
                 # -------------------------
                 # Métricas
@@ -185,7 +179,11 @@ class Pipeline:
                     {
                         "modelo": nome,
                         **resultado,
-                        **{k: v for k, v in metricas_cv.items() if self._valor_numerico_valido(v)},
+                        **{
+                            k: v
+                            for k, v in metricas_cv.items()
+                            if self._valor_numerico_valido(v)
+                        },
                         "custo_negocio": custo,
                     }
                 )
@@ -205,4 +203,3 @@ class Pipeline:
         self.logger.info("Tabela final gerada com sucesso")
 
         return df_resultados
-

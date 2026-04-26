@@ -1,18 +1,21 @@
 import logging
 import sys
-from datetime import datetime
-from pythonjsonlogger import jsonlogger
+from datetime import UTC, datetime
 
-class JsonFormatter(jsonlogger.JsonFormatter):
+from pythonjsonlogger import json
+
+
+class JsonFormatter(json.JsonFormatter):
     def add_fields(self, log_record, record, message_dict):
         super().add_fields(log_record, record, message_dict)
-        log_record['timestamp'] = datetime.utcnow().isoformat() + 'Z'
-        log_record['level'] = record.levelname
-        log_record['logger'] = record.name
-        log_record['services'] = 'churn_prediction_api'
+        log_record["timestamp"] = datetime.now(UTC).isoformat()
+        log_record["level"] = record.levelname
+        log_record["logger"] = record.name
+        log_record["services"] = "churn_prediction_api"
 
-        if not log_record.get('message'):
-            log_record['message'] = record.getMessage()
+        if not log_record.get("message"):
+            log_record["message"] = record.getMessage()
+
 
 def setup_api_logger():
     logger = logging.getLogger("churn_prediction_api")
@@ -24,9 +27,10 @@ def setup_api_logger():
     logger.addHandler(handler)
     return logger
 
+
 def setup_logging():
     logging.basicConfig(
         level=logging.INFO,  # ou INFO, dependendo do nível de detalhe desejado
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        force=True
+        force=True,
     )

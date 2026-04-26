@@ -10,7 +10,9 @@ from src.utils import Utilidades
 class DataPreprocessor:
     # Classe responsável por preparar os dados para os treinamentos dos modelos de machine learning.
 
-    def __init__(self, pd_dataframe: pd.DataFrame, seed: int = 42, test_size: float = 0.2):
+    def __init__(
+        self, pd_dataframe: pd.DataFrame, seed: int = 42, test_size: float = 0.2
+    ):
         self.logger = logging.getLogger(__name__)
         self.dados = pd_dataframe
         self.X = None  # Atributo (features) irá conter as colunas explicativas.
@@ -34,7 +36,9 @@ class DataPreprocessor:
         # Converter as features numéricas para o tipo float
         for feature_name in feature_names:
             try:
-                self.dados[feature_name] = pd.to_numeric(self.dados[feature_name], errors="coerce")
+                self.dados[feature_name] = pd.to_numeric(
+                    self.dados[feature_name], errors="coerce"
+                )
             except Exception as e:
                 self.logger.error(
                     f"Problemas ao tentar converter a coluna '{feature_name}' para o tipo float: {e}"

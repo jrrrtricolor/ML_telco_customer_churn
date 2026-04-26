@@ -118,7 +118,9 @@ def test_e2e_api_1000_chamadas_simples():
         print(f"latencia_media_ms={media_ms:.2f}")
 
         assert ok_200 == total_calls, "Nem todas as chamadas retornaram 200"
-        assert pred_true + pred_false == total_calls, "Nem todas as respostas tiveram prediction válido"
+        assert (
+            pred_true + pred_false == total_calls
+        ), "Nem todas as respostas tiveram prediction válido"
 
     finally:
         _docker(["docker", "rm", "-f", CONTAINER_NAME])

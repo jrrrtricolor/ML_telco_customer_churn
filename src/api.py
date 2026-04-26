@@ -1,19 +1,18 @@
 import os
+import time
 from enum import Enum
 from pathlib import Path
-import time
 
 import mlflow
 import mlflow.sklearn
 import pandas as pd
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
-from prometheus_fastapi_instrumentator import Instrumentator
-
-from src.config.logging_config import setup_api_logger
 from src.config.api_logging_middleware import LoggingMiddleware
-from src.metrics import (AVG_CONFIDENCE, PREDICTIONS_TOTAL, PREDICTION_DURATION)
+from src.config.logging_config import setup_api_logger
+from src.metrics import AVG_CONFIDENCE, PREDICTION_DURATION, PREDICTIONS_TOTAL
 
 LOGGER = setup_api_logger()
 
@@ -58,6 +57,7 @@ model = _load_model()
 app = FastAPI()
 app.add_middleware(LoggingMiddleware)
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+
 
 class GenderEnum(str, Enum):
     female = "Female"
@@ -171,10 +171,18 @@ def read_predict(prediction_request: PredictionRequest) -> PredictionResponse:
 
     duration = time.perf_counter() - start_time
 
-    LOGGER.info("prediction_made", extra={"duration": duration, "confidence": prediction_proba[0], "input_data": data_dict, "prediction": bool(prediction[0])})
+    LOGGER.info(
+        "prediction_made",
+        extra={
+            "duration": duration,
+            "confidence": prediction_proba[0],
+            "input_data": data_dict,
+            "prediction": bool(prediction[0]),
+        },
+    )
 
     PREDICTION_DURATION.observe(duration)
     PREDICTIONS_TOTAL.inc()
     AVG_CONFIDENCE.observe(prediction_proba[0])
-    
+
     return PredictionResponse(prediction=bool(prediction[0]))
