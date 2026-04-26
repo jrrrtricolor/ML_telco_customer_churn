@@ -26,6 +26,7 @@ __pycache__/
 
 # Arquivos grandes / dados
 *.csv
+!data/raw/Telco_Customer_Churn.csv
 !*.dvc
 *.parquet
 

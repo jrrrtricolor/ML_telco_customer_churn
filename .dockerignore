@@ -35,4 +35,6 @@ dist/
 notebooks/
 tests/
 docs/
-
+mlruns/
+mlflow.db
+data/processed/*.csv

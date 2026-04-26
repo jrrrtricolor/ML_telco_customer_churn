@@ -1,1 +1,5 @@
-/Telco_Customer_Churn.csv
+*
+!/.gitignore
+!/.gitkeep
+!/Telco_Customer_Churn.csv
+!/Telco_Customer_Churn.csv.dvc

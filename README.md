@@ -76,6 +76,15 @@ Teste rápido:
 curl http://127.0.0.1:8000/health
 ```
 
+### 4.1) Subir API com Docker
+
+```bash
+docker build -t churn-api .
+docker run --rm -p 8000:8000 churn-api
+```
+
+A imagem executa o treino no build para gerar `mlflow.db` e `mlruns/` antes de iniciar a API. Assim, um clone limpo com o CSV em `data/raw/Telco_Customer_Churn.csv` consegue subir a API sem passos manuais adicionais dentro do container.
+
 ### 5) Exemplo de inferência (`/predict`)
 
 ```bash
