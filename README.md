@@ -6,10 +6,10 @@ Este repositório foi estruturado para o Tech Challenge (FIAP), com pipeline de 
 
 ## Nível atual do projeto
 
-- Estágio: **iniciante para intermediário**.
-- O fluxo principal de treino roda localmente.
-- A suíte de testes roda localmente com `PYTHONPATH=.`.
-- Ainda há melhorias importantes para nível de produção (listadas no backlog).
+- Estágio: **MVP acadêmico funcional**.
+- O fluxo principal de treino roda localmente e registra modelos no MLflow.
+- A suíte rápida de testes roda localmente sem `PYTHONPATH`; o teste e2e com Docker é opcional.
+- A API possui `/health`, `/predict`, validação Pydantic e log de latência.
 
 ## Arquitetura (visão geral)
 
@@ -36,6 +36,12 @@ Este repositório foi estruturado para o Tech Challenge (FIAP), com pipeline de 
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
+pip install -e ".[dev]"
+```
+
+Alternativa com ambiente congelado:
+
+```bash
 pip install -r requirement.txt
 ```
 
@@ -44,7 +50,7 @@ pip install -r requirement.txt
 ### 1) Rodar pipeline de treino e avaliação
 
 ```bash
-PYTHONPATH=. python -m src.main
+python -m src.main
 ```
 
 Resultado esperado:
@@ -55,7 +61,13 @@ Resultado esperado:
 ### 2) Rodar testes
 
 ```bash
-PYTHONPATH=. pytest -q
+pytest -q
+```
+
+Para rodar apenas os testes rápidos, sem Docker:
+
+```bash
+pytest -q -m "not e2e"
 ```
 
 ### 3) Verificar lint (qualidade de código)
@@ -67,7 +79,7 @@ ruff check src tests
 ### 4) Subir API local
 
 ```bash
-PYTHONPATH=. uvicorn src.api:app --host 127.0.0.1 --port 8000
+uvicorn src.api:app --host 127.0.0.1 --port 8000
 ```
 
 Teste rápido:
@@ -120,6 +132,7 @@ Depois, abra no navegador:
 - Model Card (formato Google adaptado): `docs/model_card.md`
 - ML Canvas: `docs/0- ml_canvas_fase1.md`
 - Definição de métricas: `docs/1- definicao_metricas.md`
+- Deploy e monitoramento: `docs/deploy_monitoramento.md`
 
 ## Estrutura do projeto
 
@@ -129,14 +142,46 @@ data/
 docs/
 notebooks/
 tests/
+Makefile
 pyproject.toml
 requirement.txt
+```
+
+## Comandos via Makefile
+
+```bash
+make install
+make train
+make test-fast
+make lint
+make api
+make mlflow
+```
+
+## Modelo para a API
+
+A API tenta carregar o modelo nesta ordem:
+
+1. `MODEL_URI`, quando definido no ambiente.
+2. Modelo registrado no MLflow como `models:/churn_mlp/latest`.
+3. Artefato local mais recente em `mlruns`.
+
+Em uma máquina limpa, rode primeiro:
+
+```bash
+make train
+```
+
+Depois suba a API:
+
+```bash
+make api
 ```
 
 ## Troubleshooting
 
 - Erro `ModuleNotFoundError: No module named 'src'`:
-  - execute com `PYTHONPATH=.` nos comandos Python/Pytest.
+  - execute `pip install -e ".[dev]"` no ambiente virtual.
 - Porta em uso na API:
   - altere `--port` no comando do uvicorn.
 - Ambiente inconsistente:
@@ -144,11 +189,10 @@ requirement.txt
 
 ## Backlog técnico prioritário
 
-1. Corrigir os erros de lint do `ruff`.
-2. Remover necessidade de `PYTHONPATH=.` com empacotamento/instalação correta do módulo `src`.
-3. Expandir testes de schema (`pandera`) e smoke test da API.
-4. Evoluir Model Card com análises por segmento (fairness) e histórico de versões.
-5. Definir estratégia de deploy e monitoramento em nuvem (Azure).
+1. Evoluir Model Card com análises por segmento (fairness) e histórico de versões.
+2. Tunar hiperparâmetros da MLP para tentar superar a regressão logística.
+3. Executar o teste e2e Docker em ambiente com Docker disponível.
+4. Publicar a API em nuvem para buscar o bônus de deploy.
 
 ## Licença
 
