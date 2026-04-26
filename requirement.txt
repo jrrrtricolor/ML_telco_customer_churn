@@ -99,6 +99,7 @@ opentelemetry-proto==1.40.0
 opentelemetry-sdk==1.40.0
 opentelemetry-semantic-conventions==0.61b0
 packaging==26.0
+pandera>=0.24
 pandas==2.3.3
 pandocfilters==1.5.1
 parso==0.8.6

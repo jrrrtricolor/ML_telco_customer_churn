@@ -23,6 +23,7 @@ dependencies = [
     "torch>=2.11.0",
     "dvc>=3.67.1",
     "dvc-s3>=3.3.0",
+    "pandera>=0.24",
     "pydantic>=2.12.5",
 ]
 

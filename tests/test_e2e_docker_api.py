@@ -43,9 +43,16 @@ def _docker(cmd: list[str]) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, capture_output=True, text=True)
 
 
+def _docker_disponivel() -> bool:
+    return _docker(["docker", "info"]).returncode == 0
+
+
 @pytest.mark.e2e
 def test_e2e_api_1000_chamadas_simples():
     total_calls = 1000
+
+    if not _docker_disponivel():
+        pytest.skip("Docker não está disponível neste ambiente.")
 
     # Limpa container antigo, se existir.
     _docker(["docker", "rm", "-f", CONTAINER_NAME])
