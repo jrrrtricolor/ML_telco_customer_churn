@@ -1,68 +1,33 @@
-# 📊 Definição de Métricas — Churn
+# Definicao de Metricas
 
-## 🎯 Objetivo
-Prever quais clientes têm maior chance de cancelar (churn), permitindo ações de retenção.
+## Objetivo
 
----
+Avaliar modelos de churn considerando tanto desempenho estatistico quanto impacto financeiro das decisoes de retencao.
 
-## 📈 Métricas Técnicas
+## Metricas tecnicas
 
-Para avaliar o modelo, foram utilizadas:
+- PR AUC: metrica principal para lidar com desbalanceamento e foco na classe churn.
+- ROC AUC: capacidade geral de separacao entre churn e nao churn.
+- Recall: proporcao de clientes churn corretamente identificados.
+- Precision: proporcao de alertas de churn que realmente eram churn.
+- F1: equilibrio entre precision e recall.
+- Accuracy: metrica complementar, nao principal, pois pode mascarar desbalanceamento.
 
-- **AUC-ROC**  
-  Mede a capacidade do modelo de separar clientes que cancelam dos que não cancelam.
+## Metrica de negocio
 
-- **PR-AUC (Principal)**  
-  Foca na identificação correta dos clientes que realmente vão cancelar.  
-  É mais adequada para bases desbalanceadas (como churn).
+O custo de negocio considera:
 
-- **F1-score**  
-  Equilibra:
-  - Precisão (acertar quem vai cancelar)
-  - Recall (não deixar passar quem vai cancelar)
+- FP: cliente nao cancelaria, mas recebe acao de retencao.
+- FN: cliente cancelaria, mas nao foi identificado.
+- Custo de FP: 100.
+- Custo de FN: 840.
 
----
+Formula:
 
-## 💼 Métrica de Negócio
+```text
+custo_negocio = (FP * 100) + (FN * 840)
+```
 
-O objetivo não é apenas acertar previsões, mas **reduzir perdas financeiras**.
+## Criterio de leitura
 
-### 🔻 Tipos de erro:
-
-- **Falso Negativo (FN)**  
-  Cliente ia cancelar e não foi identificado → **perda de receita**
-
-- **Falso Positivo (FP)**  
-  Cliente não ia cancelar, mas recebeu oferta → **custo de retenção**
-
----
-
-## 💰 Definição de custo
-
-- Valor médio por cliente: **€840**
-- Custo de retenção: **€100**
-
-### Fórmula: 
-Dicionário:
-* FP = Falso Positivo
-* FN = Falso Negativo
-* 100 = custo de retenção por cliente
-* 840 = perda média por cliente que cancela
-
-Custo = (FP × 100) + (FN × 840)
-
----
-
-## 🧠 Estratégia
-
-- Priorizar a redução de **Falsos Negativos**
-- Usar **PR-AUC como métrica principal**
-- Avaliar modelos também pelo **impacto financeiro**
-
----
-
-## ✅ Resumo
-
-- Métrica principal: **PR-AUC**
-- Métricas de apoio: **AUC-ROC e F1-score**
-- Foco do modelo: **reduzir churn e minimizar perdas financeiras**
+Um modelo melhor nao e necessariamente o de maior accuracy. Para este problema, modelos com maior recall/PR AUC e menor custo de negocio tendem a ser mais interessantes, desde que a operacao consiga absorver o volume de clientes acionados.

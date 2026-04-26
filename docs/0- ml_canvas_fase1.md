@@ -1,70 +1,42 @@
-# ML Canvas - Previsão de Churn (Phase Zero)
+# ML Canvas - Previsao de Churn
 
-Referência: https://ml-ops.org/content/phase-zero
+## Proposta de valor
 
-## 1. Proposta de Valor
-- Problema: perda de clientes reduz receita recorrente e aumenta custo de aquisição.
-- Objetivo: reduzir churn mensal com ações de retenção orientadas por risco.
-- Usuário principal: Retenção, CRM e Atendimento.
-- Valor entregue: priorização de clientes com maior probabilidade de cancelamento.
+- Problema: clientes de telecomunicacoes cancelam contratos e reduzem receita recorrente.
+- Objetivo: priorizar clientes com maior risco de churn para campanhas de retencao.
+- Usuarios: CRM, Retencao, Atendimento e liderancas de negocio.
+- Valor esperado: reduzir perdas e direcionar melhor o custo de campanha.
 
-## 2. Fontes de Dados
-- Fonte principal: data/raw/Telco_Customer_Churn.csv.
-- Unidade de análise: 1 linha por cliente.
-- Riscos de qualidade: nulos em TotalCharges e possível desbalanceamento da classe.
-- Restrição atual: sem uso de dados externos nesta fase.
+## Dados
 
-## 3. Tarefa de Predição
-- Tipo: classificação binária supervisionada.
-- Entrada: dados cadastrais, contratuais, de serviços e financeiros.
-- Saída: probabilidade de churn no próximo ciclo.
-- Rótulo: Yes = 1, No = 0.
+- Fonte: `data/raw/Telco_Customer_Churn.csv`.
+- Unidade de analise: um cliente por linha.
+- Target: `Churn` (`Yes`/`No`), tratado como classificacao binaria.
+- Principais grupos de variaveis: perfil, contrato, servicos e cobranca.
 
-## 4. Atributos (Engenharia)
-- Principais grupos: perfil, contrato, serviços e cobrança.
-- Tratamento previsto: limpeza de nulos, padronização de categorias e encoding.
-- Exclusão: customerID não entra no modelo.
+## Predicao
 
-## 5. Avaliação Offline
-- Métricas alvo:
-  - Recall >= 0.70
-  - ROC-AUC >= 0.75
-  - Accuracy > 0.70
-- Validação: divisão estratificada em treino, validação e teste.
-- Custo de erro:
-  - FN: maior risco de perda de receita.
-  - FP: maior custo de campanha.
+- Entrada: atributos cadastrais, contratuais e financeiros do cliente.
+- Saida: classe/probabilidade de churn.
+- Uso inicial: ranking de risco para acao de retencao.
 
-## 6. Decisões
-- Uso da predição: priorizar clientes para campanha de retenção.
-- Regra operacional: clientes acima do limiar entram na fila de ação.
-- Responsável pelo limiar: time de CRM.
+## Metricas
 
-## 7. Fazer Predições
-- Modo inicial: batch diário (ou semanal no piloto).
-- Entrega: arquivo de score para consumo em CRM/BI.
-- Requisito: disponibilizar antes da janela de campanha.
+- Tecnicas: PR AUC, ROC AUC, F1, recall, precision e accuracy.
+- Negocio: custo estimado por falso positivo e falso negativo.
+- Prioridade: reduzir falsos negativos, pois clientes que cancelam sem acao geram maior perda.
 
-## 8. Coleta de Dados
-- Novos dados: resposta a campanhas e eventos de atendimento.
-- Rotulagem: churn confirmado no fechamento do ciclo.
-- Controle: monitorar completude e drift de dados.
+## Requisitos operacionais
 
-## 9. Construir Modelos
-- Retreino inicial: mensal.
-- Governança: versionamento de artefatos, parâmetros e experimentos.
-- Custo: execução local no piloto; estimativa de nuvem em fase futura.
+- Pipeline reprodutivel com seeds fixos.
+- Registro de experimentos e modelos no MLflow.
+- API de inferencia com validacao de entrada.
+- Logs estruturados e metricas de saude.
+- Monitoramento de drift, latencia, erros e custo de negocio.
 
-## 10. Avaliação em Produção e Monitoramento
-- Métricas de negócio: taxa de churn, receita preservada e uplift.
-- Métricas de modelo: estabilidade de score, precision, recall e drift.
-- Alerta: queda recorrente de desempenho por 2 ciclos.
+## Riscos
 
-## Riscos e Gate de Viabilidade
-- Qualidade de dados insuficiente.
-- ROI baixo quando custo de campanha supera retorno.
-- Projeto avança somente com metas técnicas e de negócio atendidas.
-
-## Escopo do MVP
-- Inclui: preparo de dados, treino, avaliação offline e ranking de risco.
-- Não inclui: inferência online em tempo real e automação completa em nuvem.
+- Drift de dados por mudancas comerciais ou perfil dos clientes.
+- Desbalanceamento da classe de churn.
+- Possiveis disparidades por segmentos, como senioridade, contrato ou forma de pagamento.
+- Uso indevido como decisao automatizada sem supervisao humana.

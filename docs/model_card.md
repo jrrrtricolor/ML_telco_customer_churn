@@ -6,7 +6,7 @@
 - **Tipo de problema**: classificação binária (`0 = não churn`, `1 = churn`)
 - **Tecnologias**: Scikit-Learn, PyTorch, MLflow, FastAPI
 - **Registro de artefatos**: MLflow local (`mlflow.db`)
-- **Data de referência**: 2026-04-21
+- **Data de referência**: 2026-04-26
 - **Maturidade atual**: acadêmico (iniciante/intermediário)
 - **Autores**: equipe do Tech Challenge FIAP
 
@@ -61,17 +61,18 @@ Métrica de negócio:
 
 | Modelo | Accuracy | Precision | Recall | F1 | ROC AUC | PR AUC | Custo de negócio |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| MLP | 0.7317 | 0.5143 | 0.7722 | 0.6174 | 0.7945 | 0.5359 | 104400 |
-| Decision Tree | 0.7204 | 0.5013 | 0.4785 | 0.4896 | 0.6476 | 0.3866 | 191840 |
-| Dummy | 0.7197 | 0.0000 | 0.0000 | 0.0000 | 0.5000 | 0.2803 | 331800 |
-| KNN | 0.7701 | 0.6060 | 0.5139 | 0.5562 | 0.8048 | 0.5603 | 174480 |
-| Random Forest | 0.7842 | 0.6502 | 0.4987 | 0.5645 | 0.8264 | 0.6385 | 176920 |
-| Logistic Regression | a atualizar | a atualizar | a atualizar | a atualizar | a atualizar | a atualizar | a atualizar |
+| Logistic Regression | 0.8013 | 0.6506 | 0.5428 | 0.5918 | 0.8304 | 0.6445 | 154540 |
+| MLP | 0.7942 | 0.6391 | 0.5160 | 0.5710 | 0.8271 | 0.6371 | 162940 |
+| Decision Tree | 0.7480 | 0.5266 | 0.5027 | 0.5144 | 0.6701 | 0.3974 | 173140 |
+| Dummy | 0.7346 | 0.0000 | 0.0000 | 0.0000 | 0.5000 | 0.2654 | 314160 |
+| KNN | 0.7601 | 0.5542 | 0.4920 | 0.5212 | 0.7644 | 0.5020 | 174400 |
+| Random Forest | 0.7814 | 0.6146 | 0.4733 | 0.5347 | 0.8134 | 0.5947 | 176580 |
 
 Leitura rápida:
 
-- Melhor custo de negócio no snapshot: `MLP`.
-- Melhores AUCs no snapshot: `Random Forest` e `KNN`.
+- Melhor custo de negócio no snapshot: `Logistic Regression`.
+- Melhor ROC AUC e PR AUC no snapshot: `Logistic Regression`.
+- A MLP permanece como modelo central do Tech Challenge e ficou competitiva com as baselines.
 
 ## 6. Dados de Treinamento
 
@@ -86,8 +87,8 @@ Pré-processamento aplicado no estado atual:
 
 Limitações conhecidas de treinamento:
 
-- A validação cruzada estratificada está no fluxo principal, mas ainda sem busca de hiperparâmetros.
-- A baseline de Regressão Logística foi adicionada para comparação formal.
+- A validação cruzada estratificada está no fluxo principal, mas ainda sem busca ampla de hiperparâmetros.
+- A baseline de Regressão Logística apresentou melhor custo de negócio no snapshot atual.
 - MLP com validação, mini-batch e early stopping em versão inicial.
 
 ## 7. Considerações Éticas
@@ -104,21 +105,28 @@ Boas práticas recomendadas:
 - Comparar taxas de FP/FN por grupo.
 - Manter supervisão humana na decisão final de negócio.
 
+Segmentos prioritários para análise:
+
+- `SeniorCitizen`
+- `Contract`
+- `PaymentMethod`
+- `InternetService`
+
 ## 8. Ressalvas e Recomendações
 
 ### 8.1 Ressalvas
 
 - Projeto em nível acadêmico, ainda não pronto para produção enterprise.
-- A suíte de testes depende de `PYTHONPATH=.` no estado atual.
-- O lint (`ruff`) ainda apresenta pendências.
+- A suíte de testes roda com `pytest` e comandos do `Makefile`.
+- O lint (`ruff`) passa em `src` e `tests` no ambiente local validado.
 - A API carrega modelo por `latest`, reduzindo o controle fino de versão.
 
 ### 8.2 Recomendações (próximos passos)
 
 1. Evoluir o tuning de hiperparâmetros (baselines e MLP).
-2. Adicionar testes de schema (`pandera`) e testes de API/smoke.
-3. Corrigir pendências de lint e padronizar naming/type hints.
-4. Definir monitoramento contínuo (drift, performance e custo de negócio).
+2. Executar análise quantitativa de fairness por segmento.
+3. Avaliar deploy em nuvem apenas como evolução futura.
+4. Monitorar continuamente drift, performance e custo de negócio.
 
 ## 9. Como citar este Model Card
 

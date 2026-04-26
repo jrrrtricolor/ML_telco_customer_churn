@@ -6,10 +6,10 @@ Este repositório foi estruturado para o Tech Challenge (FIAP), com pipeline de 
 
 ## Nível atual do projeto
 
-- Estágio: **iniciante para intermediário**.
+- Estágio: entrega acadêmica end-to-end para o Tech Challenge FIAP.
 - O fluxo principal de treino roda localmente.
-- A suíte de testes roda localmente com `PYTHONPATH=.`.
-- Ainda há melhorias importantes para nível de produção (listadas no backlog).
+- A suíte de testes roda pelo `Makefile` ou diretamente com `pytest`.
+- A API local/Docker serve o modelo registrado no MLflow.
 
 ## Arquitetura (visão geral)
 
@@ -36,7 +36,7 @@ Este repositório foi estruturado para o Tech Challenge (FIAP), com pipeline de 
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -r requirement.txt
+pip install -e ".[dev]"
 ```
 
 ## Como executar
@@ -44,7 +44,7 @@ pip install -r requirement.txt
 ### 1) Rodar pipeline de treino e avaliação
 
 ```bash
-PYTHONPATH=. python -m src.main
+make train
 ```
 
 Resultado esperado:
@@ -55,19 +55,19 @@ Resultado esperado:
 ### 2) Rodar testes
 
 ```bash
-PYTHONPATH=. pytest -q
+make test
 ```
 
 ### 3) Verificar lint (qualidade de código)
 
 ```bash
-ruff check src tests
+make lint
 ```
 
 ### 4) Subir API local
 
 ```bash
-PYTHONPATH=. uvicorn src.api:app --host 127.0.0.1 --port 8000
+make api
 ```
 
 Teste rápido:
@@ -109,7 +109,7 @@ curl -X POST http://127.0.0.1:8000/predict \
 Para visualizar experimentos localmente:
 
 ```bash
-mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5001
+make mlflow-ui
 ```
 
 Depois, abra no navegador:
@@ -120,6 +120,8 @@ Depois, abra no navegador:
 - Model Card (formato Google adaptado): `docs/model_card.md`
 - ML Canvas: `docs/0- ml_canvas_fase1.md`
 - Definição de métricas: `docs/1- definicao_metricas.md`
+- Deploy e monitoramento: `docs/deploy_monitoramento.md`
+- Roteiro do vídeo STAR: `docs/roteiro_video_star.md`
 
 ## Estrutura do projeto
 
@@ -131,7 +133,14 @@ notebooks/
 tests/
 pyproject.toml
 requirement.txt
+Makefile
 ```
+
+## Deploy
+
+O escopo atual usa FastAPI local/Docker para servir o modelo. O deploy em nuvem é bônus opcional do Tech Challenge e não será perseguido nesta versão.
+
+Para demonstração da entrega, rode o treino com `make train`, suba a API com `make api` e valide os endpoints `/health`, `/predict` e `/metrics`.
 
 ## Troubleshooting
 
@@ -144,11 +153,9 @@ requirement.txt
 
 ## Backlog técnico prioritário
 
-1. Corrigir os erros de lint do `ruff`.
-2. Remover necessidade de `PYTHONPATH=.` com empacotamento/instalação correta do módulo `src`.
-3. Expandir testes de schema (`pandera`) e smoke test da API.
-4. Evoluir Model Card com análises por segmento (fairness) e histórico de versões.
-5. Definir estratégia de deploy e monitoramento em nuvem (Azure).
+1. Atualizar resultados finais no Model Card sempre que o treino for reexecutado.
+2. Evoluir análise de fairness por segmento com dados recentes.
+3. Avaliar deploy em nuvem apenas como evolução futura.
 
 ## Licença
 
