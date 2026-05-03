@@ -169,3 +169,7 @@ Para demonstração da entrega, rode o treino com `make train`, suba a API com `
 ## Licença
 
 MIT
+
+## Video Apresentação
+
+https://youtu.be/Ib49IrSbYhc
