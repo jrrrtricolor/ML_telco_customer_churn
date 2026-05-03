@@ -11,6 +11,30 @@ Este repositório foi estruturado para o Tech Challenge (FIAP), com pipeline de 
 - A suíte de testes roda pelo `Makefile` ou diretamente com `pytest`.
 - A API local/Docker serve o modelo registrado no MLflow.
 
+## Acesso para avaliação FIAP
+
+- Repositório GitHub: https://github.com/jrrrtricolor/ML_telco_customer_churn
+- Branch principal para avaliação: `main`
+- Vídeo de apresentação: https://youtu.be/Ib49IrSbYhc
+
+### Checklist dos requisitos atendidos
+
+| Requisito | Onde validar |
+|---|---|
+| Problema de negócio e proposta de valor | `README.md`, `docs/0- ml_canvas_fase1.md` |
+| Pipeline de preparação e treino | `src/data_prep.py`, `src/pipeline.py`, `src/main.py` |
+| Baselines Scikit-Learn | `src/model_factory.py`, `src/sklearn_pipeline.py` |
+| Rede neural MLP com PyTorch | `src/mlp_model.py`, `src/sklearn_mlp_model.py` |
+| Métricas técnicas e métrica de negócio | `src/avaliador.py`, `docs/1- definicao_metricas.md` |
+| Rastreamento de experimentos com MLflow | `src/pipeline.py`, comando `make mlflow-ui` |
+| API de inferência com FastAPI | `src/api.py`, endpoints `/health`, `/predict`, `/metrics` |
+| Validação de entrada | `src/schema.py`, testes em `tests/test_schema.py` |
+| Docker para execução reprodutível | `Dockerfile`, comando `docker build -t churn-api .` |
+| Testes automatizados | `tests/`, comando `make test` |
+| Lint/qualidade de código | `pyproject.toml`, comando `make lint` |
+| Monitoramento básico | `src/prometheus/`, `docs/deploy_monitoramento.md` |
+| Documentação de riscos e limitações | `docs/model_card.md`, `docs/deploy_monitoramento.md` |
+
 ## Arquitetura (visão geral)
 
 - `src/load.py`: carga e validação inicial dos dados.
@@ -38,6 +62,16 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -e ".[dev]"
 ```
+
+## Dados
+
+O dataset principal esperado pelo pipeline está em:
+
+```text
+data/raw/Telco_Customer_Churn.csv
+```
+
+O repositório também mantém arquivos `.dvc` para rastreabilidade dos dados. Em um clone limpo da entrega, valide se o CSV está presente antes de rodar `make train` ou o build Docker.
 
 ## Como executar
 
@@ -150,6 +184,26 @@ Makefile
 O escopo atual usa FastAPI local/Docker para servir o modelo. O deploy em nuvem é bônus opcional do Tech Challenge e não será perseguido nesta versão.
 
 Para demonstração da entrega, rode o treino com `make train`, suba a API com `make api` e valide os endpoints `/health`, `/predict` e `/metrics`.
+
+## Validação da entrega
+
+Comandos recomendados antes da avaliação:
+
+```bash
+git checkout main
+git pull origin main
+make lint
+make test-unit
+docker build -t churn-api .
+docker run --rm -p 8000:8000 churn-api
+```
+
+Em outra aba, valide:
+
+```bash
+curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/metrics
+```
 
 ## Troubleshooting
 
